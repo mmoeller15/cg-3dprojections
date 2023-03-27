@@ -1,26 +1,64 @@
 // create a 4x4 matrix to the perspective projection / view matrix
-function mat4x4Perspective(prp, srp, vup, clip) {
+function mat4x4Perspective(prp, srp, vup, clip) { 
     // 1. translate PRP to origin
+    let t_prp = new Matrix(4,4);
+    t_prp.values = [[1, 0, 0, -prp.values[0]],
+                   [0, 1, 0, -prp.values[1]],
+                   [0, 0, 1, -prp.values[2]],
+                   [0, 0, 0, 1]];
     // 2. rotate VRC such that (u,v,n) align with (x,y,z)
-    // 3. shear such that CW is on the z-axis
-    // 4. scale such that view volume bounds are ([z,-z], [z,-z], [-1,zmin])
+    let n = prp.subtract(srp);
+    n.normalize();
+    let u = vup.cross(n);
+    u.normalize();
+    let v = n.cross(u);
 
+    let r = new Matrix(4,4);
+    r.values = [[u.values[0][0], u.values[1][0], u.values[2][0], 0],
+                [v.values[0][0], v.values[1][0], v.values[2][0], 0],
+                [n.values[0][0], n.values[1][0], n.values[2][0], 0],
+                [0, 0, 0, 1]];
+    // 3. shear such that CW is on the z-axis
+    let CW = [(clip[0] + clip[1]) / 2, (clip[2] + clip[3]) / 2, -clip[4]];
+    let DOP = new Matrix(3,1);
+    DOP.values = [CW[0], CW[1], CW[2]]
+    
+    let sh_per = new Matrix(4,4);
+    sh_per.values = [[1, 0, (-DOP.values[0]/DOP.values[2]), 0],
+                     [0, 1, (-DOP.values[1]/DOP.values[2]), 0],
+                     [0, 0, 1, 0],
+                     [0, 0, 0, 1]];
+    // 4. scale such that view volume bounds are ([z,-z], [z,-z], [-1,zmin])
+    let s_per = new Matrix(4, 4);
+    s_per.values = [[((2*clip[4])/((clip[1]-clip[0])*clip[5])), 0, 0, 0],
+                    [0, ((2*clip[4])/((clip[3]-clip[2])*clip[5])), 0, 0],
+                    [0, 0, (1/clip[5]), 0],
+                    [0, 0, 0, 1]];
     // ...
     // let transform = Matrix.multiply([...]);
     // return transform;
+
+    let transform = Matrix.multiply([s_per, sh_per, r, t_prp]);
+    return transform;
 }
 
 // create a 4x4 matrix to project a perspective image on the z=-1 plane
 function mat4x4MPer() {
     let mper = new Matrix(4, 4);
-    // mper.values = ...;
+    mper.values = [[1, 0, 0, 0],
+                   [0, 1, 0, 0],
+                   [0, 0, 1, 0],
+                   [0, 0, -1, 0]];
     return mper;
 }
 
 // create a 4x4 matrix to translate/scale projected vertices to the viewport (window)
 function mat4x4Viewport(width, height) {
     let viewport = new Matrix(4, 4);
-    // viewport.values = ...;
+    viewport.values = [[width/2, 0, 0, width/2],
+                       [0, height/2, 0, height/2],
+                       [0, 0, 1, 0],
+                       [0, 0, 0, 1]];
     return viewport;
 }
 

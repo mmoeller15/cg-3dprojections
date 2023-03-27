@@ -57,10 +57,6 @@ class Renderer {
 
     //
     draw() {
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
-        console.log('draw()');
-
         // TODO: implement drawing here!
         // For each model
         //   * For each vertex
@@ -70,6 +66,16 @@ class Renderer {
         //     * project to 2D
         //     * translate/scale to viewport (i.e. window)
         //     * draw line
+
+
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+        console.log('draw()');
+        console.log(this.scene);
+
+
+        
+
     }
 
     // Get outcode for a vertex
@@ -191,7 +197,7 @@ class Renderer {
             model.matrix = new Matrix(4, 4);
             processed.models.push(model);
         }
-
+        console.log(processed)
         return processed;
     }
     
