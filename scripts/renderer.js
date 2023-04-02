@@ -82,51 +82,8 @@ class Renderer {
         console.log('draw()');
         console.log(this.scene);
 
+
         console.log(mat4x4Perspective(this.scene.view.prp,this.scene.view.srp,this.scene.view.vup, this.scene.view.clip))
-        //this.drawLine(4,4,400,400);
-        let line = [];
-       
-        if(this.scene.models[0].type === 'generic'){
-            console.log('yes')
-        }
-
-<<<<<<< Updated upstream
-        if(this.scene.models[0].type === 'cube'){
-            console.log('cube')
-        }
-
-        console.log(this.scene.models);
-        
-        for(let i = 0; i < this.scene.models.length; i++){
-            for(let j = 0; j < this.scene.models[i].vertices.length; j++){
-                console.log(this.scene.models[0].vertices[0]);
-                console.log(this.scene.models[0].edges[0][1]);
-                console.log('hi')
-                let m = new Matrix(4, 1);
-                m.values = [this.scene.models[i].vertices[j].values[0], this.scene.models[i].vertices[j].values[1], this.scene.models[i].vertices[j].values[2], this.scene.models[i].vertices[j].values[3]]
-
-
-                line.push(Matrix.multiply([mat4x4Viewport(this.canvas.width, this.canvas.height),mat4x4Perspective(this.scene.view.prp,this.scene.view.srp,this.scene.view.vup, this.scene.view.clip), m]));
-                console.log(line)
-               
-            }
-        }
-        for(let j = 0; j < this.scene.models[0].edges.length; j++) {
-            for(let i = 0; i < this.scene.models[0].edges[j].length - 1; i++) {
-                this.drawLine(line[this.scene.models[0].edges[j][i]].values[0]/line[this.scene.models[0].edges[j][i]].values[3],
-                            line[this.scene.models[0].edges[j][i]].values[1]/line[this.scene.models[0].edges[j][i]].values[3],
-                            line[this.scene.models[0].edges[j][i+1]].values[0]/line[this.scene.models[0].edges[j][i+1]].values[3],
-                            line[this.scene.models[0].edges[j][i+1]].values[1]/line[this.scene.models[0].edges[j][i+1]].values[3]);
-            }
-        }   
-        /*
-        for(let i = 0; i < line.length-1; i++){
-            this.drawLine(line[i].values[0]/line[i].values[3], line[i].values[1]/line[i].values[3], line[i+1].values[0]/line[i+1].values[3], line[i+1].values[1]/line[i+1].values[3])
-        }
-        */
-=======
-        console.log(mat4x4Perspective(this.scene.view.prp,this.scene.view.srp,this.scene.view.vup, this.scene.view.clip))
->>>>>>> Stashed changes
         
         
         
@@ -269,18 +226,12 @@ class Renderer {
             for(let index = 0; index < (this.scene.models[i].slices+this.scene.models[i].stacks+2); index++){
                 edges.push([]);
             }
-            
-            // top node
-            //v.push(Vector4(this.scene.models[i].center.values[0][0], this.scene.models[i].center.values[1][0] + this.scene.models[i].radius, this.scene.models[i].center.values[2][0], 1))
-            
 
             let a = (2*Math.PI)/this.scene.models[i].slices;
             let b = (Math.PI)/this.scene.models[i].stacks; //((Math.PI/2)-Math.PI)/this.scene.models[i].stacks;
 
             let radius = 0//this.scene.models[i].radius;
             
-
-
             for(let k = 0; k <= (this.scene.models[i].stacks); k++){
                 let phi = Math.PI / 2 - k *b //(k + 1)*b;
                 for(let j = 0; j < this.scene.models[i].slices; j++){
@@ -296,19 +247,9 @@ class Renderer {
                     
                 }
 
-            // console.log(radius)
-            // if(k < (this.scene.models[i].stacks /2) ){
-            //     radius = radius + Math.round(this.scene.models[i].radius / (this.scene.models[i].stacks/2));
-            // } else{
-            //     radius = radius - Math.round(this.scene.models[i].radius / (this.scene.models[i].stacks/2));
-            // }
-             
-             
-
             // set last edge back to beginning edge to connect
             edges[k].push([(k*this.scene.models[i].slices)])
             }
-
 
             let newVertices = [];
             // project to 2D
@@ -340,17 +281,7 @@ class Renderer {
 
         }
 
-
-        
-
-
-
-
-
     }
-        
-
-    
 
     // Get outcode for a vertex
     // vertex:       Vector4 (transformed vertex in homogeneous coordinates)
