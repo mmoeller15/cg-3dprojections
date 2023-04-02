@@ -156,9 +156,9 @@ class Renderer {
             // top vertices and edges
             for(let j = 0; j < this.scene.models[i].sides; j++){
                 let theta = (j + 1)*a;
-                v.push(Vector4(Math.round(this.scene.models[i].center.values[0][0] + this.scene.models[i].radius*Math.cos(theta)), 
+                v.push(Vector4((this.scene.models[i].center.values[0][0] + this.scene.models[i].radius*Math.cos(theta)), 
                     (this.scene.models[i].center.values[1][0] + (this.scene.models[i].height)/2), 
-                    Math.round(this.scene.models[i].center.values[2][0]+this.scene.models[i].radius*Math.sin(theta)), 
+                    (this.scene.models[i].center.values[2][0]+this.scene.models[i].radius*Math.sin(theta)), 
                     1));
                 
                 // top edges
@@ -173,9 +173,9 @@ class Renderer {
             // bottom vertices
             for(let j = 0; j < this.scene.models[i].sides; j++){
                 let theta = (j + 1)*a;
-                v.push(Vector4(Math.round(this.scene.models[i].center.values[0][0] + this.scene.models[i].radius*Math.cos(theta)), 
+                v.push(Vector4((this.scene.models[i].center.values[0][0] + this.scene.models[i].radius*Math.cos(theta)), 
                     (this.scene.models[i].center.values[1][0] - (this.scene.models[i].height)/2), 
-                    Math.round(this.scene.models[i].center.values[2][0]+this.scene.models[i].radius*Math.sin(theta)), 
+                    (this.scene.models[i].center.values[2][0]+this.scene.models[i].radius*Math.sin(theta)), 
                     1));
             }
 
