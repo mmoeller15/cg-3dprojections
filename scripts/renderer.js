@@ -228,9 +228,8 @@ class Renderer {
             }
 
             let a = (2*Math.PI)/this.scene.models[i].slices;
-            let b = (Math.PI)/this.scene.models[i].stacks; //((Math.PI/2)-Math.PI)/this.scene.models[i].stacks;
+            let b = (Math.PI)/this.scene.models[i].stacks; 
 
-            let radius = 0//this.scene.models[i].radius;
             
             for(let k = 0; k <= (this.scene.models[i].stacks); k++){
                 let phi = Math.PI / 2 - k *b //(k + 1)*b;
