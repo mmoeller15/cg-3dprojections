@@ -27,32 +27,41 @@ class Renderer {
 
     //
     rotateLeft() {
-
+      
     }
     
     //
     rotateRight() {
-
+        
     }
     
     //
     moveLeft() {
 
+        this.scene.view.srp.values[0][0] = this.scene.view.srp.values[0][0] + 1;
+        this.scene.view.prp.values[0][0] = this.scene.view.prp.values[0][0] + 1;
+        this.draw()
     }
     
     //
     moveRight() {
-
+        this.scene.view.srp.values[0][0] = this.scene.view.srp.values[0][0] - 1;
+        this.scene.view.prp.values[0][0] = this.scene.view.prp.values[0][0] - 1;
+        this.draw()
     }
     
     //
     moveBackward() {
-
+        this.scene.view.srp.values[1][0] = this.scene.view.srp.values[1][0] + 1;
+        this.scene.view.prp.values[1][0] = this.scene.view.prp.values[1][0] + 1;
+        this.draw()
     }
     
     //
     moveForward() {
-
+        this.scene.view.srp.values[1][0] = this.scene.view.srp.values[1][0] - 1;
+        this.scene.view.prp.values[1][0] = this.scene.view.prp.values[1][0] - 1;
+        this.draw()
     }
 
     //
@@ -81,6 +90,7 @@ class Renderer {
             console.log('yes')
         }
 
+<<<<<<< Updated upstream
         if(this.scene.models[0].type === 'cube'){
             console.log('cube')
         }
@@ -114,7 +124,227 @@ class Renderer {
             this.drawLine(line[i].values[0]/line[i].values[3], line[i].values[1]/line[i].values[3], line[i+1].values[0]/line[i+1].values[3], line[i+1].values[1]/line[i+1].values[3])
         }
         */
+=======
+        console.log(mat4x4Perspective(this.scene.view.prp,this.scene.view.srp,this.scene.view.vup, this.scene.view.clip))
+>>>>>>> Stashed changes
         
+        
+        
+
+        //for each model in scene
+        for(let i = 0; i < this.scene.models.length; i++){
+            if(this.scene.models[i].type === 'generic'){
+            let newVertices = [];
+
+
+            
+                // transform endpoints to canonical view volume
+                for(let j = 0; j < this.scene.models[i].vertices.length; j++) {
+                    newVertices.push(Matrix.multiply([mat4x4Perspective(this.scene.view.prp,this.scene.view.srp,this.scene.view.vup, this.scene.view.clip), this.scene.models[i].vertices[j]]));
+                }
+                console.log(newVertices)
+
+                // clip in 3D
+                // for(let m = 0; m < newVertices.length; m++){
+                // for(let m = 0; m < 1; m++){
+                //     let clippedLine = this.clipLinePerspective({pt0: newVertices[m], pt1: newVertices[m]}, this.scene.view.clip[4]);
+                    
+                //     console.log(clippedLine);
+                //     // if(clippedLine != null){
+                //     //     console.log('here')
+                //     //     newVertices[m].values[0][0] = clippedLine.pt0;
+                //     //     newVertices[m].values[1][0] = clippedLine.pt1;
+                //     // }
+                // }
+
+
+                // project to 2D and translate/scale to viewport (i.e. window)
+                for(let h = 0; h < newVertices.length; h++){
+                    newVertices[h] = Matrix.multiply([mat4x4Viewport(this.canvas.width, this.canvas.height), mat4x4MPer(), newVertices[h]])
+                }
+                
+                // draw line
+                for(let n = 0; n < newVertices.length; n++){
+                    newVertices[n].values[0][0] = newVertices[n].values[0]/newVertices[n].values[3];
+                    newVertices[n].values[1][0] = newVertices[n].values[1]/newVertices[n].values[3];
+                }
+                
+              
+
+                for(let j = 0; j < this.scene.models[i].edges.length; j++){
+                    for(let k = 0; k < this.scene.models[i].edges[j].length - 1; k++){
+                        this.drawLine(newVertices[this.scene.models[i].edges[j][k]].values[0], newVertices[this.scene.models[i].edges[j][k]].values[1], newVertices[this.scene.models[i].edges[j][k+1]].values[0], newVertices[this.scene.models[i].edges[j][k+1]].values[1])
+                    }
+                }  
+                //this.drawLine(newVertices[0].values[0][0],newVertices[0].values[1][0],newVertices[1].values[0][0],newVertices[1].values[1][0])
+
+            }
+
+        
+        
+        
+        
+        if(this.scene.models[0].type === 'cylinder'){
+            console.log('cylinder');
+            // center (3-component array), radius, height, sides
+            let v = [];
+            let edges = []
+            //create enough space for each edge
+            for(let index = 0; index < this.scene.models[i].sides+2; index++){
+                edges.push([]);
+            }
+            
+            let a = (2*Math.PI)/this.scene.models[i].sides;
+            
+            // top vertices and edges
+            for(let j = 0; j < this.scene.models[i].sides; j++){
+                let theta = (j + 1)*a;
+                v.push(Vector4(Math.round(this.scene.models[i].center.values[0][0] + this.scene.models[i].radius*Math.cos(theta)), 
+                    (this.scene.models[i].center.values[1][0] + (this.scene.models[i].height)/2), 
+                    Math.round(this.scene.models[i].center.values[2][0]+this.scene.models[i].radius*Math.sin(theta)), 
+                    1));
+                
+                // top edges
+                edges[0].push([j])
+                // bottom edges
+                edges[1].push([j+this.scene.models[i].sides])
+                // top to bottom edges
+                edges[j+2].push([j])
+                edges[j+2].push([j+this.scene.models[i].sides])
+            }
+
+            // bottom vertices
+            for(let j = 0; j < this.scene.models[i].sides; j++){
+                let theta = (j + 1)*a;
+                v.push(Vector4(Math.round(this.scene.models[i].center.values[0][0] + this.scene.models[i].radius*Math.cos(theta)), 
+                    (this.scene.models[i].center.values[1][0] - (this.scene.models[i].height)/2), 
+                    Math.round(this.scene.models[i].center.values[2][0]+this.scene.models[i].radius*Math.sin(theta)), 
+                    1));
+            }
+
+            // set last edge back to beginning edge to connect
+            edges[0].push([0])
+            edges[1].push([this.scene.models[i].sides])
+
+
+            let newVertices = [];
+            // project to 2D
+            for(let j = 0; j < v.length; j++) {
+                newVertices.push(Matrix.multiply([mat4x4Perspective(this.scene.view.prp,this.scene.view.srp,this.scene.view.vup, this.scene.view.clip), v[j]]));
+            }
+
+            // clipping
+
+
+
+            // translate/scale to viewport (i.e. window)
+            for(let h = 0; h < newVertices.length; h++){
+            newVertices[h] = Matrix.multiply([mat4x4Viewport(this.canvas.width, this.canvas.height), mat4x4MPer(), newVertices[h]])
+            }
+            
+            // draw line
+            for(let n = 0; n < newVertices.length; n++){
+                newVertices[n].values[0][0] = newVertices[n].values[0]/newVertices[n].values[3];
+                newVertices[n].values[1][0] = newVertices[n].values[1]/newVertices[n].values[3];
+            }
+
+
+            for(let j = 0; j < edges.length; j++){
+                for(let k = 0; k < edges[j].length - 1; k++){
+                    this.drawLine(newVertices[edges[j][k]].values[0], newVertices[edges[j][k]].values[1], newVertices[edges[j][k+1]].values[0], newVertices[edges[j][k+1]].values[1])
+                }
+            } 
+
+        }
+
+
+
+
+        if(this.scene.models[0].type === 'sphere'){
+            console.log('sphere');
+            // center (3-component array), radius, slices, stacks
+            let v = [];
+            let edges = []
+            
+            for(let index = 0; index < (this.scene.models[i].slices+this.scene.models[i].stacks+2); index++){
+                edges.push([]);
+            }
+            
+            // top node
+            //v.push(Vector4(this.scene.models[i].center.values[0][0], this.scene.models[i].center.values[1][0] + this.scene.models[i].radius, this.scene.models[i].center.values[2][0], 1))
+            
+
+            let a = (2*Math.PI)/this.scene.models[i].slices;
+            let b = (Math.PI)/this.scene.models[i].stacks; //((Math.PI/2)-Math.PI)/this.scene.models[i].stacks;
+
+            let radius = 0//this.scene.models[i].radius;
+            
+
+
+            for(let k = 0; k <= (this.scene.models[i].stacks); k++){
+                let phi = Math.PI / 2 - k *b //(k + 1)*b;
+                for(let j = 0; j < this.scene.models[i].slices; j++){
+                    let theta = (j)*a;
+                    
+                    v.push(Vector4((this.scene.models[i].center.values[0][0] + (this.scene.models[i].radius*Math.cos(phi))*Math.cos(theta)), 
+                        (this.scene.models[i].center.values[1][0] +  (this.scene.models[i].radius*Math.cos(phi))*Math.sin(theta)), 
+                        (this.scene.models[i].center.values[2][0] + this.scene.models[i].radius*Math.sin(phi)), 
+                        1));
+
+                    edges[k].push([k*(this.scene.models[i].slices) +j])
+                    edges[this.scene.models[i].stacks +1 + j].push(j + k*(this.scene.models[i].slices))
+                    
+                }
+
+            // console.log(radius)
+            // if(k < (this.scene.models[i].stacks /2) ){
+            //     radius = radius + Math.round(this.scene.models[i].radius / (this.scene.models[i].stacks/2));
+            // } else{
+            //     radius = radius - Math.round(this.scene.models[i].radius / (this.scene.models[i].stacks/2));
+            // }
+             
+             
+
+            // set last edge back to beginning edge to connect
+            edges[k].push([(k*this.scene.models[i].slices)])
+            }
+
+
+            let newVertices = [];
+            // project to 2D
+            for(let j = 0; j < v.length; j++) {
+                newVertices.push(Matrix.multiply([mat4x4Perspective(this.scene.view.prp,this.scene.view.srp,this.scene.view.vup, this.scene.view.clip), v[j]]));
+            }
+
+            // clipping
+
+
+
+            // translate/scale to viewport (i.e. window)
+            for(let h = 0; h < newVertices.length; h++){
+            newVertices[h] = Matrix.multiply([mat4x4Viewport(this.canvas.width, this.canvas.height), mat4x4MPer(), newVertices[h]])
+            }
+            
+            // draw line
+            for(let n = 0; n < newVertices.length; n++){
+                newVertices[n].values[0][0] = newVertices[n].values[0]/newVertices[n].values[3];
+                newVertices[n].values[1][0] = newVertices[n].values[1]/newVertices[n].values[3];
+            }
+
+            for(let j = 0; j < edges.length; j++){
+                for(let k = 0; k < edges[j].length - 1; k++){
+                    this.drawLine(newVertices[edges[j][k]].values[0], newVertices[edges[j][k]].values[1], newVertices[edges[j][k+1]].values[0], newVertices[edges[j][k+1]].values[1])
+                }
+            } 
+        }
+
+        }
+
+
+        
+
+
+
 
 
     }
@@ -127,22 +357,22 @@ class Renderer {
     // z_min:        float (near clipping plane in canonical view volume)
     outcodePerspective(vertex, z_min) {
         let outcode = 0;
-        if (vertex.x < (vertex.z - FLOAT_EPSILON)) {
+        if (vertex.x < (vertex.z - FLOAT_EPSILON)) {    console.log('left');
             outcode += LEFT;
         }
-        else if (vertex.x > (-vertex.z + FLOAT_EPSILON)) {
+        else if (vertex.x > (-vertex.z + FLOAT_EPSILON)) {    console.log('right');
             outcode += RIGHT;
         }
-        if (vertex.y < (vertex.z - FLOAT_EPSILON)) {
+        if (vertex.y < (vertex.z - FLOAT_EPSILON)) {    console.log('bottom');
             outcode += BOTTOM;
         }
-        else if (vertex.y > (-vertex.z + FLOAT_EPSILON)) {
+        else if (vertex.y > (-vertex.z + FLOAT_EPSILON))    {console.log('top');
             outcode += TOP;
         }
-        if (vertex.z < (-1.0 - FLOAT_EPSILON)) {
+        if (vertex.z < (-1.0 - FLOAT_EPSILON)) {    console.log('far');
             outcode += FAR;
         }
-        else if (vertex.z > (z_min + FLOAT_EPSILON)) {
+        else if (vertex.z > (z_min + FLOAT_EPSILON)) {    console.log('near');
             outcode += NEAR;
         }
         return outcode;
@@ -156,11 +386,35 @@ class Renderer {
         let result = null;
         let p0 = Vector3(line.pt0.x, line.pt0.y, line.pt0.z); 
         let p1 = Vector3(line.pt1.x, line.pt1.y, line.pt1.z);
-        let out0 = outcodePerspective(p0, z_min);
-        let out1 = outcodePerspective(p1, z_min);
+        let out0 = this.outcodePerspective(p0, z_min);
+        let out1 = this.outcodePerspective(p1, z_min);
         
+        console.log(line)
         // TODO: implement clipping here!
+        console.log(out0)
+        console.log(out1)
+
+        // trivial accept - Both p0 and p1 are inside clip edge
+        // if(out0 | out1 == 0){
+        //     result = line;
+        // } 
+        // // trivial reject - Both p0 and p1 are outside clip edge
+        // else if (out0 & out1 != 0){
+        //     result = null;
+        // } else{
+            if(out0 - 8 >= 0) {
+                console.log('hi')
+
+                out0 = out0 - 8;
+            }
+
+        // }
         
+        
+
+
+
+        console.log(result)
         return result;
     }
 
