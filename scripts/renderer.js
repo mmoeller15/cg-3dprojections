@@ -178,11 +178,11 @@ class Renderer {
                 newVertices[n].values[0][0] = newVertices[n].values[0]/newVertices[n].values[3];
                 newVertices[n].values[1][0] = newVertices[n].values[1]/newVertices[n].values[3];
             }
+            
             //top box
             let edges = [0, 1, 2, 3, 0];
             for(let j = 0; j < edges.length-1; j++){
                 this.drawLine(newVertices[edges[j]].values[0], newVertices[edges[j]].values[1], newVertices[edges[j+1]].values[0], newVertices[edges[j+1]].values[1])
-
             } 
             //bottom box
             edges = [4, 5, 6, 7, 4];
@@ -190,12 +190,10 @@ class Renderer {
                 this.drawLine(newVertices[edges[j]].values[0], newVertices[edges[j]].values[1], newVertices[edges[j+1]].values[0], newVertices[edges[j+1]].values[1])
             } 
             //vertical lines
-            this.drawLine(newVertices[0].values[0], newVertices[0].values[1], newVertices[4].values[0], newVertices[4].values[1]);
-            this.drawLine(newVertices[1].values[0], newVertices[1].values[1], newVertices[5].values[0], newVertices[5].values[1]);
-            this.drawLine(newVertices[2].values[0], newVertices[2].values[1], newVertices[6].values[0], newVertices[6].values[1]);
-            this.drawLine(newVertices[3].values[0], newVertices[3].values[1], newVertices[7].values[0], newVertices[7].values[1]);
-
-
+            for(let j = 0; j < 4; j++) {
+                this.drawLine(newVertices[j].values[0], newVertices[j].values[1], newVertices[j+4].values[0], newVertices[j+4].values[1]);
+            }
+            
         }
         
         
