@@ -167,6 +167,7 @@ class Renderer {
             for(let j = 0; j < v.length; j++) {
                 newVertices.push(Matrix.multiply([mat4x4Perspective(this.scene.view.prp,this.scene.view.srp,this.scene.view.vup, this.scene.view.clip), v[j]]));
             }
+            console.log(mat4x4Perspective(this.scene.view.prp,this.scene.view.srp,this.scene.view.vup, this.scene.view.clip));
             // translate/scale to viewport (i.e. window)
             for(let h = 0; h < newVertices.length; h++){
                 newVertices[h] = Matrix.multiply([mat4x4Viewport(this.canvas.width, this.canvas.height), mat4x4MPer(), newVertices[h]])
