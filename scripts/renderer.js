@@ -37,30 +37,45 @@ class Renderer {
     
     //
     moveLeft() {
+        let n = this.scene.view.prp.subtract(this.scene.view.srp);
+        n.normalize();
+        let u = this.scene.view.vup.cross(n);
+        u.normalize();
 
-        this.scene.view.srp.values[0][0] = this.scene.view.srp.values[0][0] + 1;
-        this.scene.view.prp.values[0][0] = this.scene.view.prp.values[0][0] + 1;
+        this.scene.view.srp = this.scene.view.srp.add(u);
+        this.scene.view.prp= this.scene.view.prp.add(u);
         this.draw()
     }
     
     //
     moveRight() {
-        this.scene.view.srp.values[0][0] = this.scene.view.srp.values[0][0] - 1;
-        this.scene.view.prp.values[0][0] = this.scene.view.prp.values[0][0] - 1;
+        let n = this.scene.view.prp.subtract(this.scene.view.srp);
+        n.normalize();
+        let u = this.scene.view.vup.cross(n);
+        u.normalize();
+
+        this.scene.view.srp = this.scene.view.srp.subtract(u);
+        this.scene.view.prp= this.scene.view.prp.subtract(u);
         this.draw()
     }
     
     //
     moveBackward() {
-        this.scene.view.srp.values[1][0] = this.scene.view.srp.values[1][0] + 1;
-        this.scene.view.prp.values[1][0] = this.scene.view.prp.values[1][0] + 1;
+        let n = this.scene.view.prp.subtract(this.scene.view.srp);
+        n.normalize();
+
+        this.scene.view.srp = this.scene.view.srp.subtract(n);
+        this.scene.view.prp= this.scene.view.prp.subtract(n);
         this.draw()
     }
     
     //
     moveForward() {
-        this.scene.view.srp.values[1][0] = this.scene.view.srp.values[1][0] - 1;
-        this.scene.view.prp.values[1][0] = this.scene.view.prp.values[1][0] - 1;
+        let n = this.scene.view.prp.subtract(this.scene.view.srp);
+        n.normalize();
+  
+        this.scene.view.srp = this.scene.view.srp.add(n);
+        this.scene.view.prp= this.scene.view.prp.add(n);
         this.draw()
     }
 
