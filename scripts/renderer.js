@@ -138,7 +138,64 @@ class Renderer {
             }
 
         
-        
+        if(this.scene.models[0].type === 'cube') {
+            console.log('cube');
+            let v = [];
+            //top front left
+            let first = Vector4(this.scene.models[i].center.values[0][0] - this.scene.models[i].width/2,
+                         this.scene.models[i].center.values[1][0] + this.scene.models[i].height/2,
+                         this.scene.models[i].center.values[2][0] + this.scene.models[i].depth/2, 1);
+            //top back left
+            let second = Vector4(first.x, first.y, first.z - this.scene.models[i].depth, 1);
+            //top back right
+            let third = Vector4(first.x + this.scene.models[i].width, first.y, first.z - this.scene.models[i].depth, 1);
+            //top front right
+            let fourth = Vector4(first.x + this.scene.models[i].width, first.y, first.z, 1);
+            //bottom front left
+            let fifth = Vector4(first.x, first.y - this.scene.models[i].height, first.z, 1);
+            //bottom back left
+            let sixth = Vector4(first.x, first.y - this.scene.models[i].height, first.z - this.scene.models[i].depth, 1);
+            //bottom back right
+            let seventh = Vector4(first.x + this.scene.models[i].width, first.y - this.scene.models[i].height, first.z - this.scene.models[i].depth, 1);
+            //bottom front right
+            let eight = Vector4(first.x + this.scene.models[i].width, first.y - this.scene.models[i].height, first.z, 1);
+            v.push(first, second, third, fourth, fifth, sixth, seventh, eight);
+            console.log(v);
+            
+            let newVertices = [];
+            // project to 2D
+            for(let j = 0; j < v.length; j++) {
+                newVertices.push(Matrix.multiply([mat4x4Perspective(this.scene.view.prp,this.scene.view.srp,this.scene.view.vup, this.scene.view.clip), v[j]]));
+            }
+            // translate/scale to viewport (i.e. window)
+            for(let h = 0; h < newVertices.length; h++){
+                newVertices[h] = Matrix.multiply([mat4x4Viewport(this.canvas.width, this.canvas.height), mat4x4MPer(), newVertices[h]])
+            }
+
+            // draw line
+            for(let n = 0; n < newVertices.length; n++){
+                newVertices[n].values[0][0] = newVertices[n].values[0]/newVertices[n].values[3];
+                newVertices[n].values[1][0] = newVertices[n].values[1]/newVertices[n].values[3];
+            }
+            //top box
+            let edges = [0, 1, 2, 3, 0];
+            for(let j = 0; j < edges.length-1; j++){
+                this.drawLine(newVertices[edges[j]].values[0], newVertices[edges[j]].values[1], newVertices[edges[j+1]].values[0], newVertices[edges[j+1]].values[1])
+
+            } 
+            //bottom box
+            edges = [4, 5, 6, 7, 4];
+            for(let j = 0; j < edges.length-1; j++){
+                this.drawLine(newVertices[edges[j]].values[0], newVertices[edges[j]].values[1], newVertices[edges[j+1]].values[0], newVertices[edges[j+1]].values[1])
+            } 
+            //vertical lines
+            this.drawLine(newVertices[0].values[0], newVertices[0].values[1], newVertices[4].values[0], newVertices[4].values[1]);
+            this.drawLine(newVertices[1].values[0], newVertices[1].values[1], newVertices[5].values[0], newVertices[5].values[1]);
+            this.drawLine(newVertices[2].values[0], newVertices[2].values[1], newVertices[6].values[0], newVertices[6].values[1]);
+            this.drawLine(newVertices[3].values[0], newVertices[3].values[1], newVertices[7].values[0], newVertices[7].values[1]);
+
+
+        }
         
         
         if(this.scene.models[0].type === 'cylinder'){
