@@ -27,12 +27,28 @@ class Renderer {
 
     //
     rotateLeft() {
-      
+        
+        let n = this.scene.view.prp.subtract(this.scene.view.srp);
+        n.normalize();
+        let u = this.scene.view.vup.cross(n);
+        u.normalize();
+        let v = n.cross(u);
+
+
+        this.scene.view.srp = this.scene.view.srp.add(v);
+        this.draw()
     }
     
     //
     rotateRight() {
+        let n = this.scene.view.prp.subtract(this.scene.view.srp);
+        n.normalize();
+        let u = this.scene.view.vup.cross(n);
+        u.normalize();
+        let v = n.cross(u);
         
+        this.scene.view.srp = this.scene.view.srp.subtract(v);
+        this.draw()
     }
     
     //
@@ -96,60 +112,63 @@ class Renderer {
 
         console.log('draw()');
         console.log(this.scene);
-
-
-        console.log(mat4x4Perspective(this.scene.view.prp,this.scene.view.srp,this.scene.view.vup, this.scene.view.clip))
-        
-        
         
 
         //for each model in scene
         for(let i = 0; i < this.scene.models.length; i++){
-            if(this.scene.models[i].type === 'generic'){
-            let newVertices = [];
-
-
             
+            
+            if(this.scene.models[i].type === 'generic'){
+                let newVertices = []
+
                 // transform endpoints to canonical view volume
                 for(let j = 0; j < this.scene.models[i].vertices.length; j++) {
                     newVertices.push(Matrix.multiply([mat4x4Perspective(this.scene.view.prp,this.scene.view.srp,this.scene.view.vup, this.scene.view.clip), this.scene.models[i].vertices[j]]));
                 }
-                console.log(newVertices)
-
-                // clip in 3D
-                // for(let m = 0; m < newVertices.length; m++){
-                // for(let m = 0; m < 1; m++){
-                //     let clippedLine = this.clipLinePerspective({pt0: newVertices[m], pt1: newVertices[m]}, this.scene.view.clip[4]);
-                    
-                //     console.log(clippedLine);
-                //     // if(clippedLine != null){
-                //     //     console.log('here')
-                //     //     newVertices[m].values[0][0] = clippedLine.pt0;
-                //     //     newVertices[m].values[1][0] = clippedLine.pt1;
-                //     // }
-                // }
-
-
-                // project to 2D and translate/scale to viewport (i.e. window)
-                for(let h = 0; h < newVertices.length; h++){
-                    newVertices[h] = Matrix.multiply([mat4x4Viewport(this.canvas.width, this.canvas.height), mat4x4MPer(), newVertices[h]])
-                }
-                
-                // draw line
-                for(let n = 0; n < newVertices.length; n++){
-                    newVertices[n].values[0][0] = newVertices[n].values[0]/newVertices[n].values[3];
-                    newVertices[n].values[1][0] = newVertices[n].values[1]/newVertices[n].values[3];
-                }
-                
-              
-
+               
+                // clip in 3D 
+                let lines = [];
                 for(let j = 0; j < this.scene.models[i].edges.length; j++){
-                    for(let k = 0; k < this.scene.models[i].edges[j].length - 1; k++){
-                        this.drawLine(newVertices[this.scene.models[i].edges[j][k]].values[0], newVertices[this.scene.models[i].edges[j][k]].values[1], newVertices[this.scene.models[i].edges[j][k+1]].values[0], newVertices[this.scene.models[i].edges[j][k+1]].values[1])
+                    for(let k = 0; k < this.scene.models[i].edges[j].length - 1; k++){          
+                        let clippedLine = this.clipLinePerspective({pt0: newVertices[this.scene.models[i].edges[j][k]], pt1: newVertices[this.scene.models[i].edges[j][k + 1]]}, this.scene.view.clip[4]);
+         
+                        if(clippedLine != null){
+                            lines.push([clippedLine.pt0,clippedLine.pt1])
+                        } else {
+                            lines.push([null,null])
+                        }
                     }
-                }  
-                //this.drawLine(newVertices[0].values[0][0],newVertices[0].values[1][0],newVertices[1].values[0][0],newVertices[1].values[1][0])
+                }
+                
+                // project to 2D and translate/scale to viewport (i.e. window)
+                for(let j = 0; j < lines.length; j++){
+                    for(let k = 0; k < lines[j].length; k++){ 
+                        if(lines[j][k] != null){
+                            lines[j][k] = Matrix.multiply([mat4x4Viewport(this.canvas.width, this.canvas.height), mat4x4MPer(), lines[j][k]])
+                        }
+                    }
+                }
 
+
+                // draw line
+                for(let j = 0; j < lines.length; j++){
+                    for(let k = 0; k < lines[j].length; k++){ 
+                        if(lines[j][k] != null){
+                            lines[j][k].values[0][0] = lines[j][k].values[0]/lines[j][k].values[3];
+                            lines[j][k].values[1][0] = lines[j][k].values[1]/lines[j][k].values[3];
+                        }
+                    }
+                }
+
+                for(let j = 0; j < lines.length; j++){
+                    for(let k = 0; k < lines[j].length-1; k++){ 
+                        if(lines[j][k] != null && lines[j][k+1] != null){
+                            this.drawLine(lines[j][k].values[0], lines[j][k].values[1], lines[j][k+1].values[0], lines[j][k+1].values[1])
+                        }
+                    }
+                } 
+
+            
             }
 
         
@@ -205,28 +224,48 @@ class Renderer {
                 newVertices.push(Matrix.multiply([mat4x4Perspective(this.scene.view.prp,this.scene.view.srp,this.scene.view.vup, this.scene.view.clip), v[j]]));
             }
 
-            // clipping
 
-
-
-            // translate/scale to viewport (i.e. window)
-            for(let h = 0; h < newVertices.length; h++){
-            newVertices[h] = Matrix.multiply([mat4x4Viewport(this.canvas.width, this.canvas.height), mat4x4MPer(), newVertices[h]])
+            // clip in 3D 
+            let lines = [];
+            for(let j = 0; j < edges.length; j++){
+                for(let k = 0; k < edges[j].length - 1; k++){          
+                    let clippedLine = this.clipLinePerspective({pt0: newVertices[edges[j][k]], pt1: newVertices[edges[j][k + 1]]}, this.scene.view.clip[4]);
+        
+                    if(clippedLine != null){
+                        lines.push([clippedLine.pt0,clippedLine.pt1])
+                    } else {
+                        lines.push([null,null])
+                    }
+                }
             }
             
-            // draw line
-            for(let n = 0; n < newVertices.length; n++){
-                newVertices[n].values[0][0] = newVertices[n].values[0]/newVertices[n].values[3];
-                newVertices[n].values[1][0] = newVertices[n].values[1]/newVertices[n].values[3];
+            // project to 2D and translate/scale to viewport (i.e. window)
+            for(let j = 0; j < lines.length; j++){
+                for(let k = 0; k < lines[j].length; k++){ 
+                    if(lines[j][k] != null){
+                        lines[j][k] = Matrix.multiply([mat4x4Viewport(this.canvas.width, this.canvas.height), mat4x4MPer(), lines[j][k]])
+                    }
+                }
             }
 
 
-            for(let j = 0; j < edges.length; j++){
-                for(let k = 0; k < edges[j].length - 1; k++){
-                    this.drawLine(newVertices[edges[j][k]].values[0], newVertices[edges[j][k]].values[1], newVertices[edges[j][k+1]].values[0], newVertices[edges[j][k+1]].values[1])
+            // draw line
+            for(let j = 0; j < lines.length; j++){
+                for(let k = 0; k < lines[j].length; k++){ 
+                    if(lines[j][k] != null){
+                        lines[j][k].values[0][0] = lines[j][k].values[0]/lines[j][k].values[3];
+                        lines[j][k].values[1][0] = lines[j][k].values[1]/lines[j][k].values[3];
+                    }
+                }
+            }
+
+            for(let j = 0; j < lines.length; j++){
+                for(let k = 0; k < lines[j].length-1; k++){ 
+                    if(lines[j][k] != null && lines[j][k+1] != null){
+                        this.drawLine(lines[j][k].values[0], lines[j][k].values[1], lines[j][k+1].values[0], lines[j][k+1].values[1])
+                    }
                 }
             } 
-
         }
 
 
@@ -271,24 +310,45 @@ class Renderer {
                 newVertices.push(Matrix.multiply([mat4x4Perspective(this.scene.view.prp,this.scene.view.srp,this.scene.view.vup, this.scene.view.clip), v[j]]));
             }
 
-            // clipping
-
-
-
-            // translate/scale to viewport (i.e. window)
-            for(let h = 0; h < newVertices.length; h++){
-            newVertices[h] = Matrix.multiply([mat4x4Viewport(this.canvas.width, this.canvas.height), mat4x4MPer(), newVertices[h]])
+            // clip in 3D 
+            let lines = [];
+            for(let j = 0; j < edges.length; j++){
+                for(let k = 0; k < edges[j].length - 1; k++){          
+                    let clippedLine = this.clipLinePerspective({pt0: newVertices[edges[j][k]], pt1: newVertices[edges[j][k + 1]]}, this.scene.view.clip[4]);
+     
+                    if(clippedLine != null){
+                        lines.push([clippedLine.pt0,clippedLine.pt1])
+                    } else {
+                        lines.push([null,null])
+                    }
+                }
             }
             
-            // draw line
-            for(let n = 0; n < newVertices.length; n++){
-                newVertices[n].values[0][0] = newVertices[n].values[0]/newVertices[n].values[3];
-                newVertices[n].values[1][0] = newVertices[n].values[1]/newVertices[n].values[3];
+            // project to 2D and translate/scale to viewport (i.e. window)
+            for(let j = 0; j < lines.length; j++){
+                for(let k = 0; k < lines[j].length; k++){ 
+                    if(lines[j][k] != null){
+                        lines[j][k] = Matrix.multiply([mat4x4Viewport(this.canvas.width, this.canvas.height), mat4x4MPer(), lines[j][k]])
+                    }
+                }
             }
 
-            for(let j = 0; j < edges.length; j++){
-                for(let k = 0; k < edges[j].length - 1; k++){
-                    this.drawLine(newVertices[edges[j][k]].values[0], newVertices[edges[j][k]].values[1], newVertices[edges[j][k+1]].values[0], newVertices[edges[j][k+1]].values[1])
+
+            // draw line
+            for(let j = 0; j < lines.length; j++){
+                for(let k = 0; k < lines[j].length; k++){ 
+                    if(lines[j][k] != null){
+                        lines[j][k].values[0][0] = lines[j][k].values[0]/lines[j][k].values[3];
+                        lines[j][k].values[1][0] = lines[j][k].values[1]/lines[j][k].values[3];
+                    }
+                }
+            }
+
+            for(let j = 0; j < lines.length; j++){
+                for(let k = 0; k < lines[j].length-1; k++){ 
+                    if(lines[j][k] != null && lines[j][k+1] != null){
+                        this.drawLine(lines[j][k].values[0], lines[j][k].values[1], lines[j][k+1].values[0], lines[j][k+1].values[1])
+                    }
                 }
             } 
         }
@@ -328,39 +388,149 @@ class Renderer {
     // line:         object {pt0: Vector4, pt1: Vector4}
     // z_min:        float (near clipping plane in canonical view volume)
     clipLinePerspective(line, z_min) {
+        //console.log(line)
         let result = null;
-        let p0 = Vector3(line.pt0.x, line.pt0.y, line.pt0.z); 
+        let p0 = Vector3(line.pt0.x, line.pt0.y, line.pt0.z);
         let p1 = Vector3(line.pt1.x, line.pt1.y, line.pt1.z);
-        let out0 = this.outcodePerspective(p0, z_min);
-        let out1 = this.outcodePerspective(p1, z_min);
-        
-        console.log(line)
-        // TODO: implement clipping here!
-        console.log(out0)
-        console.log(out1)
+        //console.log(line.pt0);
+        let out0 = this.outcodePerspective(line.pt0, z_min);
+        //console.log(line.pt1);
+        let out1 = this.outcodePerspective(line.pt1, z_min);
 
-        // trivial accept - Both p0 and p1 are inside clip edge
-        // if(out0 | out1 == 0){
-        //     result = line;
-        // } 
-        // // trivial reject - Both p0 and p1 are outside clip edge
-        // else if (out0 & out1 != 0){
-        //     result = null;
-        // } else{
-            if(out0 - 8 >= 0) {
-                console.log('hi')
-
-                out0 = out0 - 8;
+        // Check if both endpoints are inside the view volume
+        if ((out0 | out1) == 0) {
+            //result = line;
+            return line;
+        }
+        // Check if the line is completely outside the view volume
+        else if ((out0 & out1) !== 0) {
+            //result = null;
+            return null;
+        } else {
+            let x, y, z, t;
+            // Clip against left plane
+            if (((out0 | out1) & 0b100000) !== 0) {
+                if(out0 > out1) {
+                    let t = (-p0.x + p0.z) / ((p1.x - p0.x) - (p1.z - p0.z));
+                    let x = p0.x + t*(p1.x - p0.x);
+                    let y = p0.y + t*(p1.y - p0.y);
+                    let z = p0.z + t*(p1.z - p0.z);
+                    let newLine = Vector4(x, y, z, 1);
+                    result = {pt0: newLine, pt1: Vector4(p1.x, p1.y, p1.z, 1)};
+                }
+                else {
+                    let t = (-p1.x + p1.z) / ((p1.x - p0.x) - (p1.z - p0.z));
+                    let x = p1.x + t*(p1.x - p0.x);
+                    let y = p1.y + t*(p1.y - p0.y);
+                    let z = p1.z + t*(p1.z - p0.z);
+                    let newLine = Vector4(x, y, z, 1);
+                    result = {pt0: Vector4(p0.x, p0.y, p0.z, 1), pt1: newLine};
+                }
             }
 
-        // }
-        
-        
+            // Clip against right plane
+            else if (((out0 | out1) & 0b010000) !== 0) {
+                if(out0 > out1) {
+                    let t = (p0.x + p0.z) / (-(p1.x - p0.x) - (p1.z - p0.z));
+                    let x = p0.x + t*(p1.x - p0.x);
+                    let y = p0.y + t*(p1.y - p0.y);
+                    let z = p0.z + t*(p1.z - p0.z);
+                    let newLine = Vector4(x, y, z, 1);
+                    result = {pt0: newLine, pt1: Vector4(p1.x, p1.y, p1.z, 1)};
+                }
+                else {
+                    let t = (p1.x + p1.z) / (-(p1.x - p0.x) - (p1.z - p0.z));
+                    let x = p1.x + t*(p1.x - p0.x);
+                    let y = p1.y + t*(p1.y - p0.y);
+                    let z = p1.z + t*(p1.z - p0.z);
+                    let newLine = Vector4(x, y, z, 1);
+                    result = {pt0: Vector4(p0.x, p0.y, p0.z, 1), pt1: newLine};
+                }
+            }
+            // Clip against bottom plane
+            else if (((out0 | out1) & 0b001000) !== 0) {
+                if(out0 > out1) {
+                    let t = (-p0.y + p0.z) / ((p1.y - p0.y) - (p1.z - p0.z));
+                    let x = p0.x + t*(p1.x - p0.x);
+                    let y = p0.y + t*(p1.y - p0.y);
+                    let z = p0.z + t*(p1.z - p0.z);
+                    let newLine = Vector4(x, y, z, 1);
+                    result = {pt0: newLine, pt1: Vector4(p1.x, p1.y, p1.z, 1)};
+                }
+                else {
+                    let t = (-p1.y + p1.z) / ((p1.y - p0.y) - (p1.z - p0.z));
+                    let x = p1.x + t*(p1.x - p0.x);
+                    let y = p1.y + t*(p1.y - p0.y);
+                    let z = p1.z + t*(p1.z - p0.z);
+                    let newLine = Vector4(x, y, z, 1);
+                    result = {pt0: Vector4(p0.x, p0.y, p0.z, 1), pt1: newLine};
+                }
+            }
+            // Clip against top plane
+            else if (((out0 | out1) & 0b000100) !== 0) {
+                if(out0 > out1) {
+                    let t = (p0.y + p0.z) / (-(p1.y - p0.y) - (p1.z - p0.z));
+                    let x = p0.x + t*(p1.x - p0.x);
+                    let y = p0.y + t*(p1.y - p0.y);
+                    let z = p0.z + t*(p1.z - p0.z);
+                    let newLine = Vector4(x, y, z, 1);
+                    result = {pt0: newLine, pt1: Vector4(p1.x, p1.y, p1.z, 1)};
+                }
+                else {
+                    let t = (p1.y + p1.z) / (-(p1.y - p0.y) - (p1.z - p0.z));
+                    let x = p1.x + t*(p1.x - p0.x);
+                    let y = p1.y + t*(p1.y - p0.y);
+                    let z = p1.z + t*(p1.z - p0.z);
+                    let newLine = Vector4(x, y, z, 1);
+                    result = {pt0: Vector4(p0.x, p0.y, p0.z, 1), pt1: newLine};
+                }
+            }
+            // Clip against far plane
+            else if (((out0 | out1) & 0b000010) !== 0) {
+                if(out0 > out1) {
+                    let t = (-p0.z - 1) / (p1.z - p0.z);
+                    let x = p0.x + t*(p1.x - p0.x);
+                    let y = p0.y + t*(p1.y - p0.y);
+                    let z = p0.z + t*(p1.z - p0.z);
+                    let newLine = Vector4(x, y, z, 1);
+                    result = {pt0: newLine, pt1: Vector4(p1.x, p1.y, p1.z, 1)};
+                }
+                else {
+                    let t = (-p1.z - 1) / (p1.z - p0.z);
+                    let x = p1.x + t*(p1.x - p0.x);
+                    let y = p1.y + t*(p1.y - p0.y);
+                    let z = p1.z + t*(p1.z - p0.z);
+                    let newLine = Vector4(x, y, z, 1);
+                    result = {pt0: Vector4(p0.x, p0.y, p0.z, 1), pt1: newLine};
+                }
+            }
+            // Clip against near plane
+            else if (((out0 | out1) & 0b000001) !== 0) {
+                if(out0 > out1) {
+                    let t = (p0.z - z_min) / -(p1.z - p0.z);
+                    let x = p0.x + t*(p1.x - p0.x);
+                    let y = p0.y + t*(p1.y - p0.y);
+                    let z = p0.z + t*(p1.z - p0.z);
+                    let newLine = Vector4(x, y, z, 1);
+                    result = {pt0: newLine, pt1: Vector4(p1.x, p1.y, p1.z, 1)};
+                }
+                else {
+                    let t = (p1.z - z_min) / -(p1.z - p0.z);
+                    let x = p1.x + t*(p1.x - p0.x);
+                    let y = p1.y + t*(p1.y - p0.y);
+                    let z = p1.z + t*(p1.z - p0.z);
+                    let newLine = Vector4(x, y, z, 1);
+                    result = {pt0: Vector4(p0.x, p0.y, p0.z, 1), pt1: newLine};
+                }
+            }
+                // Create the clipped line
+            //let clippedP0 = Vector4(p0.x, p0.y, p0.z, 1);
+            //let clippedP1 = Vector4(p1.x, p1.y, p1.z, 1);
+            //result = { pt0: clippedP0, pt1: clippedP1 };
+        }
+          //return result;
+          return this.clipLinePerspective(result, z_min);
 
-
-
-        console.log(result)
-        return result;
     }
 
     //
