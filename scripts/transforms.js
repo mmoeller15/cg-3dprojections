@@ -2,13 +2,16 @@
 function mat4x4Perspective(prp, srp, vup, clip) { 
     // 1. translate PRP to origin
     let t_prp = new Matrix(4,4);
-    t_prp.values = [[1, 0, 0, -prp.values[0]],
-                   [0, 1, 0, -prp.values[1]],
-                   [0, 0, 1, -prp.values[2]],
+    t_prp.values = [[1, 0, 0, -(prp.values[0])],
+                   [0, 1, 0, -(prp.values[1])],
+                   [0, 0, 1, -(prp.values[2])],
                    [0, 0, 0, 1]];
     // 2. rotate VRC such that (u,v,n) align with (x,y,z)
     let n = prp.subtract(srp);
+    //console.log("n=");
+    //console.log(n);
     n.normalize();
+    
     let u = vup.cross(n);
     u.normalize();
     let v = n.cross(u);
@@ -39,6 +42,7 @@ function mat4x4Perspective(prp, srp, vup, clip) {
     // return transform;
 
     let transform = Matrix.multiply([s_per, sh_per, r, t_prp]);
+    let final = Matrix.multiply([mat4x4MPer(), transform]);
     return transform;
 }
 

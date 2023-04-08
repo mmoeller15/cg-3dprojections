@@ -95,65 +95,143 @@ class Renderer {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
         console.log('draw()');
-        console.log(this.scene);
+        //console.log(this.scene);
 
-
-        console.log(mat4x4Perspective(this.scene.view.prp,this.scene.view.srp,this.scene.view.vup, this.scene.view.clip))
+        console.log("here");
         
         
         
 
         //for each model in scene
-        for(let i = 0; i < this.scene.models.length; i++){
-            if(this.scene.models[i].type === 'generic'){
-            let newVertices = [];
+        if(this.scene.models[0].type === 'generic'){
+            let newv = [];
 
-
+            // transform endpoints to canonical view volume
+            for(let j = 0; j < this.scene.models[0].vertices.length; j++) {
+                newv.push(Matrix.multiply([mat4x4Perspective(this.scene.view.prp,this.scene.view.srp,this.scene.view.vup, this.scene.view.clip), this.scene.models[0].vertices[j]]));
+            }
             
-                // transform endpoints to canonical view volume
-                for(let j = 0; j < this.scene.models[i].vertices.length; j++) {
-                    newVertices.push(Matrix.multiply([mat4x4Perspective(this.scene.view.prp,this.scene.view.srp,this.scene.view.vup, this.scene.view.clip), this.scene.models[i].vertices[j]]));
-                }
-                console.log(newVertices)
-
-                // clip in 3D
-                // for(let m = 0; m < newVertices.length; m++){
-                // for(let m = 0; m < 1; m++){
-                //     let clippedLine = this.clipLinePerspective({pt0: newVertices[m], pt1: newVertices[m]}, this.scene.view.clip[4]);
-                    
-                //     console.log(clippedLine);
-                //     // if(clippedLine != null){
-                //     //     console.log('here')
-                //     //     newVertices[m].values[0][0] = clippedLine.pt0;
-                //     //     newVertices[m].values[1][0] = clippedLine.pt1;
-                //     // }
-                // }
-
-
-                // project to 2D and translate/scale to viewport (i.e. window)
-                for(let h = 0; h < newVertices.length; h++){
-                    newVertices[h] = Matrix.multiply([mat4x4Viewport(this.canvas.width, this.canvas.height), mat4x4MPer(), newVertices[h]])
-                }
-                
-                // draw line
-                for(let n = 0; n < newVertices.length; n++){
-                    newVertices[n].values[0][0] = newVertices[n].values[0]/newVertices[n].values[3];
-                    newVertices[n].values[1][0] = newVertices[n].values[1]/newVertices[n].values[3];
-                }
-                
-              
-
-                for(let j = 0; j < this.scene.models[i].edges.length; j++){
-                    for(let k = 0; k < this.scene.models[i].edges[j].length - 1; k++){
-                        this.drawLine(newVertices[this.scene.models[i].edges[j][k]].values[0], newVertices[this.scene.models[i].edges[j][k]].values[1], newVertices[this.scene.models[i].edges[j][k+1]].values[0], newVertices[this.scene.models[i].edges[j][k+1]].values[1])
+            for(let i = 0; i < newv.length; i++) {
+                newv[i].x = newv[i].x / newv[i].w;
+                newv[i].y = newv[i].y / newv[i].w;
+            }
+            
+            // clip in 3D
+            let newedges = [];
+            let newVertices = [];
+            let clipped, line;
+            let p0, p1;
+            let edge = 0;
+            for(let j = 0; j < this.scene.models[0].edges[0].length - 1; j++){
+                    p0 = newv[this.scene.models[0].edges[0][j]];
+                    p1 = newv[this.scene.models[0].edges[0][j+1]];
+                    line = {pt0: p0, pt1: p1};
+                    clipped = this.clipLinePerspective(line, this.scene.view.clip[4]);
+                    if(clipped !== null && clipped !== line) {
+                        //if(clipped.pt0 != p0) {
+                            //console.log("0 clipped");
+                            newVertices.push(clipped.pt0);
+                            newedges.push(edge++);
+                            //newv[this.scene.models[0].edges[0][j]] = clipped.pt0;
+                        //}
+                        //if(clipped.pt1 != p1) {
+                            //console.log("1 clipped");
+                            newVertices.push(clipped.pt1);
+                            newedges.push(edge++);
+                            //newv[this.scene.models[0].edges[0][j+1]] = clipped.pt1;a
+                        //}
+                        
                     }
-                }  
-                //this.drawLine(newVertices[0].values[0][0],newVertices[0].values[1][0],newVertices[1].values[0][0],newVertices[1].values[1][0])
+                    else {
+                        newVertices.push(p0);
+                        newedges.push(edge++);
+                    }
+                    
+            }   
+            console.log(newVertices.length);
+            newedges.push(newedges[0]);
+            console.log(newVertices[0]);
+            console.log(newVertices[1]);
+            console.log(newVertices[2]);
+            console.log(newVertices[3]);
+            console.log(newVertices[4]);
+            console.log(newVertices[5]);
+            console.log(newedges);
 
+
+            // project to 2D and translate/scale to viewport (i.e. window)
+            for(let h = 0; h < newVertices.length; h++){
+                newVertices[h] = Matrix.multiply([mat4x4Viewport(this.canvas.width, this.canvas.height), mat4x4MPer(), newVertices[h]])
+            }
+            //console.log(newVertices)
+            // draw line
+            for(let n = 0; n < newVertices.length; n++){
+                newVertices[n].values[0][0] = newVertices[n].values[0]/newVertices[n].values[3];
+                newVertices[n].values[1][0] = newVertices[n].values[1]/newVertices[n].values[3];
+            }
+            //console.log(newVertices);
+            //console.log(this.scene.view.clip[4]);
+
+            //console.log(newVertices);
+            for(let i = 0; i < newedges.length - 1; i++) {
+                this.drawLine(newVertices[newedges[i]].values[0], newVertices[newedges[i]].values[1], newVertices[newedges[i+1]].values[0], newVertices[newedges[i+1]].values[1]);
+            }
+            /*
+            for(let j = 0; j < this.scene.models[0].edges.length; j++){
+                for(let k = 0; k < this.scene.models[0].edges[j].length - 1; k++){
+                    this.drawLine(newVertices[this.scene.models[0].edges[j][k]].values[0], newVertices[this.scene.models[0].edges[j][k]].values[1], newVertices[this.scene.models[0].edges[j][k+1]].values[0], newVertices[this.scene.models[0].edges[j][k+1]].values[1])
+                }
+            } 
+            */
+            //this.drawLine(newVertices[0].values[0][0],newVertices[0].values[1][0],newVertices[1].values[0][0],newVertices[1].values[1][0])
+        }
+        
+
+        if(this.scene.models[0].type === 'cone') {
+            let v = [];
+            let edges = [];
+            let a = (2*Math.PI)/this.scene.models[i].sides;
+            for(let j = 0; j < this.scene.models[i].sides; j++){
+                let theta = (j + 1)*a;
+                v.push(Vector4((this.scene.models[i].center.values[0][0] + this.scene.models[i].radius*Math.cos(theta)), 
+                    (this.scene.models[i].center.values[1][0]), 
+                    (this.scene.models[i].center.values[2][0]+this.scene.models[i].radius*Math.sin(theta)), 
+                    1));
+                
+                // top edges
+                edges.push([j])
+            }
+            edges.push(0)
+            v.push(Vector4(this.scene.models[i].center.values[0][0], this.scene.models[i].center.values[1][0] + this.scene.models[i].height, this.scene.models[i].center.values[2][0], 1));
+            let newVertices = [];
+            // project to 2D
+            for(let j = 0; j < v.length; j++) {
+                newVertices.push(Matrix.multiply([mat4x4Perspective(this.scene.view.prp,this.scene.view.srp,this.scene.view.vup, this.scene.view.clip), v[j]]));
             }
 
-        
-        
+            // clipping
+
+
+
+            // translate/scale to viewport (i.e. window)
+            for(let h = 0; h < newVertices.length; h++){
+                newVertices[h] = Matrix.multiply([mat4x4Viewport(this.canvas.width, this.canvas.height), mat4x4MPer(), newVertices[h]]);
+            }
+            
+            // draw line
+            for(let n = 0; n < newVertices.length; n++){
+                newVertices[n].values[0][0] = newVertices[n].values[0]/newVertices[n].values[3];
+                newVertices[n].values[1][0] = newVertices[n].values[1]/newVertices[n].values[3];
+            }
+
+            for(let j = 0; j < edges.length - 1; j++) {
+                this.drawLine(newVertices[edges[j]].values[0], newVertices[edges[j]].values[1], newVertices[edges[j+1]].values[0], newVertices[edges[j+1]].values[1]);
+            }
+            for(let j = 0; j < edges.length; j++) {
+                this.drawLine(newVertices[edges[j]].values[0], newVertices[edges[j]].values[1], newVertices[newVertices.length-1].values[0], newVertices[newVertices.length-1].values[1]);
+            }
+
+        }
         
         
         if(this.scene.models[0].type === 'cylinder'){
@@ -162,41 +240,41 @@ class Renderer {
             let v = [];
             let edges = []
             //create enough space for each edge
-            for(let index = 0; index < this.scene.models[i].sides+2; index++){
+            for(let index = 0; index < this.scene.models[0].sides+2; index++){
                 edges.push([]);
             }
             
-            let a = (2*Math.PI)/this.scene.models[i].sides;
+            let a = (2*Math.PI)/this.scene.models[0].sides;
             
             // top vertices and edges
-            for(let j = 0; j < this.scene.models[i].sides; j++){
+            for(let j = 0; j < this.scene.models[0].sides; j++){
                 let theta = (j + 1)*a;
-                v.push(Vector4((this.scene.models[i].center.values[0][0] + this.scene.models[i].radius*Math.cos(theta)), 
-                    (this.scene.models[i].center.values[1][0] + (this.scene.models[i].height)/2), 
-                    (this.scene.models[i].center.values[2][0]+this.scene.models[i].radius*Math.sin(theta)), 
+                v.push(Vector4((this.scene.models[0].center.values[0][0] + this.scene.models[0].radius*Math.cos(theta)), 
+                    (this.scene.models[0].center.values[1][0] + (this.scene.models[0].height)/2), 
+                    (this.scene.models[0].center.values[2][0]+this.scene.models[0].radius*Math.sin(theta)), 
                     1));
                 
                 // top edges
                 edges[0].push([j])
                 // bottom edges
-                edges[1].push([j+this.scene.models[i].sides])
+                edges[1].push([j+this.scene.models[0].sides])
                 // top to bottom edges
                 edges[j+2].push([j])
-                edges[j+2].push([j+this.scene.models[i].sides])
+                edges[j+2].push([j+this.scene.models[0].sides])
             }
 
             // bottom vertices
-            for(let j = 0; j < this.scene.models[i].sides; j++){
+            for(let j = 0; j < this.scene.models[0].sides; j++){
                 let theta = (j + 1)*a;
-                v.push(Vector4((this.scene.models[i].center.values[0][0] + this.scene.models[i].radius*Math.cos(theta)), 
-                    (this.scene.models[i].center.values[1][0] - (this.scene.models[i].height)/2), 
-                    (this.scene.models[i].center.values[2][0]+this.scene.models[i].radius*Math.sin(theta)), 
+                v.push(Vector4((this.scene.models[0].center.values[0][0] + this.scene.models[0].radius*Math.cos(theta)), 
+                    (this.scene.models[0].center.values[1][0] - (this.scene.models[0].height)/2), 
+                    (this.scene.models[0].center.values[2][0]+this.scene.models[0].radius*Math.sin(theta)), 
                     1));
             }
 
             // set last edge back to beginning edge to connect
             edges[0].push([0])
-            edges[1].push([this.scene.models[i].sides])
+            edges[1].push([this.scene.models[0].sides])
 
 
             let newVertices = [];
@@ -293,7 +371,8 @@ class Renderer {
             } 
         }
 
-        }
+        
+        
 
     }
 
@@ -323,44 +402,153 @@ class Renderer {
         return outcode;
     }
 
-    // Clip line - should either return a new line (with two endpoints inside view volume)
-    //             or null (if line is completely outside view volume)
-    // line:         object {pt0: Vector4, pt1: Vector4}
-    // z_min:        float (near clipping plane in canonical view volume)
+        // Clip line - should either return a new line (with two endpoints inside view volume)
+//             or null (if line is completely outside view volume)
+// line:         object {pt0: Vector4, pt1: Vector4}
+// z_min:        float (near clipping plane in canonical view volume)
     clipLinePerspective(line, z_min) {
         let result = null;
         let p0 = Vector3(line.pt0.x, line.pt0.y, line.pt0.z); 
         let p1 = Vector3(line.pt1.x, line.pt1.y, line.pt1.z);
-        let out0 = this.outcodePerspective(p0, z_min);
-        let out1 = this.outcodePerspective(p1, z_min);
-        
-        console.log(line)
-        // TODO: implement clipping here!
-        console.log(out0)
-        console.log(out1)
+        //console.log(line.pt0);
+        let out0 = this.outcodePerspective(line.pt0, z_min);
+        //console.log(line.pt1);
+        let out1 = this.outcodePerspective(line.pt1, z_min);
+    
+ 
 
-        // trivial accept - Both p0 and p1 are inside clip edge
-        // if(out0 | out1 == 0){
-        //     result = line;
-        // } 
-        // // trivial reject - Both p0 and p1 are outside clip edge
-        // else if (out0 & out1 != 0){
-        //     result = null;
-        // } else{
-            if(out0 - 8 >= 0) {
-                console.log('hi')
-
-                out0 = out0 - 8;
+        // Check if both endpoints are inside the view volume
+        if ((out0 | out1) == 0) {
+            result = line;
+        }
+        // Check if the line is completely outside the view volume
+        else if ((out0 & out1) !== 0) {
+            result = null;
+        }else {
+            
+            let x, y, z, t;
+            // Clip against left plane
+            if (((out0 | out1) & 0b100000) !== 0) {
+                if(out0 > out1) {
+                    let t = (-p0.x + p0.z) / ((p1.x - p0.x) - (p1.z - p0.z));
+                    let x = p0.x + t*(p1.x - p0.x);
+                    let y = p0.y + t*(p1.y - p0.y);
+                    let z = p0.z + t*(p1.z - p0.z);
+                    let newLine = Vector4(x, y, z, 1);
+                    result = {pt0: newLine, pt1: Vector4(p1.x, p1.y, p1.z, 1)};
+                }
+                else {
+                    let t = (-p1.x + p1.z) / ((p1.x - p0.x) - (p1.z - p0.z));
+                    let x = p1.x + t*(p1.x - p0.x);
+                    let y = p1.y + t*(p1.y - p0.y);
+                    let z = p1.z + t*(p1.z - p0.z);
+                    let newLine = Vector4(x, y, z, 1);
+                    result = {pt0: Vector4(p0.x, p0.y, p0.z, 1), pt1: newLine};
+                }
             }
-
-        // }
+            // Clip against right plane
+            if (((out0 | out1) & 0b010000) !== 0) {
+                if(out0 > out1) {
+                    let t = (p0.x + p0.z) / (-(p1.x - p0.x) - (p1.z - p0.z));
+                    let x = p0.x + t*(p1.x - p0.x);
+                    let y = p0.y + t*(p1.y - p0.y);
+                    let z = p0.z + t*(p1.z - p0.z);
+                    let newLine = Vector4(x, y, z, 1);
+                    result = {pt0: newLine, pt1: Vector4(p1.x, p1.y, p1.z, 1)};
+                }
+                else {
+                    let t = (p1.x + p1.z) / (-(p1.x - p0.x) - (p1.z - p0.z));
+                    let x = p1.x + t*(p1.x - p0.x);
+                    let y = p1.y + t*(p1.y - p0.y);
+                    let z = p1.z + t*(p1.z - p0.z);
+                    let newLine = Vector4(x, y, z, 1);
+                    result = {pt0: Vector4(p0.x, p0.y, p0.z, 1), pt1: newLine};
+                }
+            }
+            // Clip against bottom plane
+            if (((out0 | out1) & 0b001000) !== 0) {
+                if(out0 > out1) {
+                    let t = (-p0.y + p0.z) / ((p1.y - p0.y) - (p1.z - p0.z));
+                    let x = p0.x + t*(p1.x - p0.x);
+                    let y = p0.y + t*(p1.y - p0.y);
+                    let z = p0.z + t*(p1.z - p0.z);
+                    let newLine = Vector4(x, y, z, 1);
+                    result = {pt0: newLine, pt1: Vector4(p1.x, p1.y, p1.z, 1)};
+                }
+                else {
+                    let t = (-p1.y + p1.z) / ((p1.y - p0.y) - (p1.z - p0.z));
+                    let x = p1.x + t*(p1.x - p0.x);
+                    let y = p1.y + t*(p1.y - p0.y);
+                    let z = p1.z + t*(p1.z - p0.z);
+                    let newLine = Vector4(x, y, z, 1);
+                    result = {pt0: Vector4(p0.x, p0.y, p0.z, 1), pt1: newLine};
+                }
+            }
+            // Clip against top plane
+            if (((out0 | out1) & 0b000100) !== 0) {
+                if(out0 > out1) {
+                    let t = (p0.y + p0.z) / (-(p1.y - p0.y) - (p1.z - p0.z));
+                    let x = p0.x + t*(p1.x - p0.x);
+                    let y = p0.y + t*(p1.y - p0.y);
+                    let z = p0.z + t*(p1.z - p0.z);
+                    let newLine = Vector4(x, y, z, 1);
+                    result = {pt0: newLine, pt1: Vector4(p1.x, p1.y, p1.z, 1)};
+                }
+                else {
+                    let t = (p1.y + p1.z) / (-(p1.y - p0.y) - (p1.z - p0.z));
+                    let x = p1.x + t*(p1.x - p0.x);
+                    let y = p1.y + t*(p1.y - p0.y);
+                    let z = p1.z + t*(p1.z - p0.z);
+                    let newLine = Vector4(x, y, z, 1);
+                    result = {pt0: Vector4(p0.x, p0.y, p0.z, 1), pt1: newLine};
+                }
+            }
+            // Clip against far plane
+            if (((out0 | out1) & 0b000010) !== 0) {
+                if(out0 > out1) {
+                    let t = (-p0.z - 1) / (p1.z - p0.z);
+                    let x = p0.x + t*(p1.x - p0.x);
+                    let y = p0.y + t*(p1.y - p0.y);
+                    let z = p0.z + t*(p1.z - p0.z);
+                    let newLine = Vector4(x, y, z, 1);
+                    result = {pt0: newLine, pt1: Vector4(p1.x, p1.y, p1.z, 1)};
+                }
+                else {
+                    let t = (-p1.z - 1) / (p1.z - p0.z);
+                    let x = p1.x + t*(p1.x - p0.x);
+                    let y = p1.y + t*(p1.y - p0.y);
+                    let z = p1.z + t*(p1.z - p0.z);
+                    let newLine = Vector4(x, y, z, 1);
+                    result = {pt0: Vector4(p0.x, p0.y, p0.z, 1), pt1: newLine};
+                }
+            }
+            // Clip against near plane
+            if (((out0 | out1) & 0b000001) !== 0) {
+                if(out0 > out1) {
+                    let t = (p0.z - z_min) / -(p1.z - p0.z);
+                    let x = p0.x + t*(p1.x - p0.x);
+                    let y = p0.y + t*(p1.y - p0.y);
+                    let z = p0.z + t*(p1.z - p0.z);
+                    let newLine = Vector4(x, y, z, 1);
+                    result = {pt0: newLine, pt1: Vector4(p1.x, p1.y, p1.z, 1)};
+                }
+                else {
+                    let t = (p1.z - z_min) / -(p1.z - p0.z);
+                    let x = p1.x + t*(p1.x - p0.x);
+                    let y = p1.y + t*(p1.y - p0.y);
+                    let z = p1.z + t*(p1.z - p0.z);
+                    let newLine = Vector4(x, y, z, 1);
+                    result = {pt0: Vector4(p0.x, p0.y, p0.z, 1), pt1: newLine};
+                }
+            }
+                // Create the clipped line
+            //let clippedP0 = Vector4(p0.x, p0.y, p0.z, 1);
+            //let clippedP1 = Vector4(p1.x, p1.y, p1.z, 1);
+            //result = { pt0: clippedP0, pt1: clippedP1 };
+        }
+          
+          return result;
         
-        
-
-
-
-        console.log(result)
-        return result;
     }
 
     //
@@ -440,7 +628,7 @@ class Renderer {
             model.matrix = new Matrix(4, 4);
             processed.models.push(model);
         }
-        console.log(processed)
+        //console.log(processed)
         return processed;
     }
     
