@@ -171,6 +171,88 @@ class Renderer {
             
             }
 
+            if(this.scene.models[0].type === 'cube') {
+
+                let v = []
+                let edges = [];
+                //create enough space for each edge
+                for(let i = 0; i < 6; i++) {
+                    edges.push([]);
+                }
+                //front top left 
+                v.push(Vector4(this.scene.models[i].center.values[0][0]-this.scene.models[i].width/2, this.scene.models[i].center.values[1][0]+this.scene.models[i].height/2, this.scene.models[i].center.values[2][0]+this.scene.models[i].depth/2, 1));
+                //back top left
+                v.push(Vector4(this.scene.models[i].center.values[0][0]-this.scene.models[i].width/2, this.scene.models[i].center.values[1][0]+this.scene.models[i].height/2, this.scene.models[i].center.values[2][0]-this.scene.models[i].depth/2, 1));
+                //back top right
+                v.push(Vector4(this.scene.models[i].center.values[0][0]+this.scene.models[i].width/2, this.scene.models[i].center.values[1][0]+this.scene.models[i].height/2, this.scene.models[i].center.values[2][0]-this.scene.models[i].depth/2, 1));
+                //front top right
+                v.push(Vector4(this.scene.models[i].center.values[0][0]+this.scene.models[i].width/2, this.scene.models[i].center.values[1][0]+this.scene.models[i].height/2, this.scene.models[i].center.values[2][0]+this.scene.models[i].depth/2, 1));
+                //front bottom left
+                v.push(Vector4(this.scene.models[i].center.values[0][0]-this.scene.models[i].width/2, this.scene.models[i].center.values[1][0]-this.scene.models[i].height/2, this.scene.models[i].center.values[2][0]+this.scene.models[i].depth/2, 1));
+                //back bottom left
+                v.push(Vector4(this.scene.models[i].center.values[0][0]-this.scene.models[i].width/2, this.scene.models[i].center.values[1][0]-this.scene.models[i].height/2, this.scene.models[i].center.values[2][0]-this.scene.models[i].depth/2, 1));
+                //back bottom right
+                v.push(Vector4(this.scene.models[i].center.values[0][0]+this.scene.models[i].width/2, this.scene.models[i].center.values[1][0]-this.scene.models[i].height/2, this.scene.models[i].center.values[2][0]-this.scene.models[i].depth/2, 1));
+                //front bottom right
+                v.push(Vector4(this.scene.models[i].center.values[0][0]+this.scene.models[i].width/2, this.scene.models[i].center.values[1][0]-this.scene.models[i].height/2, this.scene.models[i].center.values[2][0]+this.scene.models[i].depth/2, 1));
+                console.log(this.scene.models[i].center.values[2][0]);
+                edges[0].push([0], [1], [2], [3], [0]);
+                edges[1].push([4], [5], [6], [7], [4]);
+                for(let i = 0; i < 4; i++) {
+                    edges[i+2].push([i], [i+4]);
+                }
+
+                let newVertices = [];
+                // project to 2D
+                for(let j = 0; j < v.length; j++) {
+                    newVertices.push(Matrix.multiply([mat4x4Perspective(this.scene.view.prp,this.scene.view.srp,this.scene.view.vup, this.scene.view.clip), v[j]]));
+                }
+                
+                // clip in 3D 
+                let lines = [];
+                for(let j = 0; j < edges.length; j++){
+                    for(let k = 0; k < edges[j].length - 1; k++){          
+                        let clippedLine = this.clipLinePerspective({pt0: newVertices[edges[j][k]], pt1: newVertices[edges[j][k + 1]]}, this.scene.view.clip[4]);
+            
+                        if(clippedLine != null){
+                            lines.push([clippedLine.pt0,clippedLine.pt1])
+                        } else {
+                            lines.push([null,null])
+                        }
+                    }
+                }
+
+                // project to 2D and translate/scale to viewport (i.e. window)
+                for(let j = 0; j < lines.length; j++){
+                    for(let k = 0; k < lines[j].length; k++){ 
+                        if(lines[j][k] != null){
+                            lines[j][k] = Matrix.multiply([mat4x4Viewport(this.canvas.width, this.canvas.height), mat4x4MPer(), lines[j][k]])
+                        }
+                    }
+                }
+
+                // draw line
+                for(let j = 0; j < lines.length; j++){
+                    for(let k = 0; k < lines[j].length; k++){ 
+                        if(lines[j][k] != null){
+                            lines[j][k].values[0][0] = lines[j][k].values[0]/lines[j][k].values[3];
+                            lines[j][k].values[1][0] = lines[j][k].values[1]/lines[j][k].values[3];
+                        }
+                    }
+                }
+    
+                for(let j = 0; j < lines.length; j++){
+                    for(let k = 0; k < lines[j].length-1; k++){ 
+                        if(lines[j][k] != null && lines[j][k+1] != null){
+                            this.drawLine(lines[j][k].values[0], lines[j][k].values[1], lines[j][k+1].values[0], lines[j][k+1].values[1])
+                        }
+                    }
+                } 
+
+
+
+            }
+
         
             if(this.scene.models[0].type === 'cone') {
                 let v = [];
