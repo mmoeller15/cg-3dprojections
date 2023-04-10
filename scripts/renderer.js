@@ -15,19 +15,18 @@ class Renderer {
         this.canvas.height = canvas.height;
         this.ctx = this.canvas.getContext('2d');
         this.scene = this.processScene(scene);
-        this.enable_animation = false;  // <-- disabled for easier debugging; enable for animation
+        this.enable_animation = true;  // <-- disabled for easier debugging; enable for animation
         this.start_time = null;
         this.prev_time = null;
         this.v = [];
+        this.vcone = [];
+        this.vcyl = [];
+        this.vs = [];
     }
 
     //
     updateTransforms(time, delta_time) {
         // TODO: update any transformations needed for animation
-    }
-
-    //
-    rotateLeft() {
         if(this.scene.models[0].type !== 'generic'){
             //this.draw();
             let center = this.scene.models[0].center;
@@ -39,18 +38,37 @@ class Renderer {
             mat4x4Translate(transform, -center.x, -center.y, -center.z);
 
             let rotate = new Matrix(4, 4);
-            mat4x4RotateY(rotate, -0.5);
+            mat4x4RotateY(rotate, delta_time/500);
 
             let ret = new Matrix(4, 4);
             mat4x4Translate(ret, center.x, center.y, center.z);
             
             let done = Matrix.multiply([ret, rotate, transform]);
             //let done2 = Matrix.multiply(done, transform);
-
-            for(let i = 0; i < this.v.length; i++) {
-                this.v[i] = Matrix.multiply([done, this.v[i]]);
+            if(this.scene.models[0].type === 'cube') {
+                for(let i = 0; i < this.v.length; i++) {
+                    this.v[i] = Matrix.multiply([done, this.v[i]]);
+                }
+                this.draw();
             }
-            this.draw();
+            else if(this.scene.models[0].type === 'cone') {
+                for(let i = 0; i < this.vcone.length; i++) {
+                    this.vcone[i] = Matrix.multiply([done, this.vcone[i]]);
+                }
+                this.draw();
+            }
+            else if(this.scene.models[0].type === 'cylinder') {
+                for(let i = 0; i < this.v.length; i++) {
+                    this.vcyl[i] = Matrix.multiply([done, this.vcyl[i]]);
+                }
+                this.draw();
+            }
+            else if(this.scene.models[0].type === 'sphere') {
+                for(let i = 0; i < this.vs.length; i++) {
+                    this.vs[i] = Matrix.multiply([done, this.vs[i]]);
+                }
+                this.draw();
+            }
         }
         else {
             let center = {x: 10, y: 10, z: -45};
@@ -59,7 +77,7 @@ class Renderer {
             mat4x4Translate(transform, -center.x, -center.y, -center.z);
 
             let rotate = new Matrix(4, 4);
-            mat4x4RotateY(rotate, -0.5);
+            mat4x4RotateY(rotate, delta_time/500);
 
             let ret = new Matrix(4, 4);
             mat4x4Translate(ret, center.x, center.y, center.z);
@@ -72,8 +90,15 @@ class Renderer {
             }
             this.draw();
         }
+        
 
-        /*
+    }
+
+    //
+    rotateLeft() {
+        
+
+        
         let n = this.scene.view.prp.subtract(this.scene.view.srp);
         n.normalize();
         let u = this.scene.view.vup.cross(n);
@@ -83,57 +108,14 @@ class Renderer {
 
         this.scene.view.srp = this.scene.view.srp.add(v);
         this.draw()
-        */
+        
         
     }
     
     //
     rotateRight() {
-        if(this.scene.models[0].type !== 'generic'){
-            //this.draw();
-            let center = this.scene.models[0].center;
-            //console.log(center.x);
-            //let center = {x: 10, y: 10, z: -45};
-
-            // matrix to translate back to origin
-            let transform = new Matrix(4, 4);
-            mat4x4Translate(transform, -center.x, -center.y, -center.z);
-
-            let rotate = new Matrix(4, 4);
-            mat4x4RotateY(rotate, 0.5);
-
-            let ret = new Matrix(4, 4);
-            mat4x4Translate(ret, center.x, center.y, center.z);
-            
-            let done = Matrix.multiply([ret, rotate, transform]);
-            //let done2 = Matrix.multiply(done, transform);
-
-            for(let i = 0; i < this.v.length; i++) {
-                this.v[i] = Matrix.multiply([done, this.v[i]]);
-            }
-            this.draw();
-        }
-        else {
-            let center = {x: 10, y: 10, z: -45};
-            // matrix to translate back to origin
-            let transform = new Matrix(4, 4);
-            mat4x4Translate(transform, -center.x, -center.y, -center.z);
-
-            let rotate = new Matrix(4, 4);
-            mat4x4RotateY(rotate, 0.5);
-
-            let ret = new Matrix(4, 4);
-            mat4x4Translate(ret, center.x, center.y, center.z);
-            
-            let done = Matrix.multiply([ret, rotate, transform]);
-            //let done2 = Matrix.multiply(done, transform);
-
-            for(let i = 0; i < this.scene.models[0].vertices.length; i++) {
-                this.scene.models[0].vertices[i] = Matrix.multiply([done, this.scene.models[0].vertices[i]]);
-            }
-            this.draw();
-        }
-        /*
+        
+        
         let n = this.scene.view.prp.subtract(this.scene.view.srp);
         n.normalize();
         let u = this.scene.view.vup.cross(n);
@@ -142,7 +124,7 @@ class Renderer {
         
         this.scene.view.srp = this.scene.view.srp.subtract(v);
         this.draw()
-        */
+        
     }
     
     //
@@ -358,7 +340,7 @@ class Renderer {
                 let a = (2*Math.PI)/this.scene.models[i].sides;
                 for(let j = 0; j < this.scene.models[i].sides; j++){
                     let theta = (j + 1)*a;
-                    this.v.push(Vector4((this.scene.models[i].center.values[0][0] + this.scene.models[i].radius*Math.cos(theta)), 
+                    this.vcone.push(Vector4((this.scene.models[i].center.values[0][0] + this.scene.models[i].radius*Math.cos(theta)), 
                         (this.scene.models[i].center.values[1][0]), 
                         (this.scene.models[i].center.values[2][0]+this.scene.models[i].radius*Math.sin(theta)), 
                         1));
@@ -371,13 +353,13 @@ class Renderer {
                 console.log('cone');
                 console.log(edges)
                 //edges.push(0)
-                this.v.push(Vector4(this.scene.models[i].center.values[0][0], this.scene.models[i].center.values[1][0] + this.scene.models[i].height, this.scene.models[i].center.values[2][0], 1));
+                this.vcone.push(Vector4(this.scene.models[i].center.values[0][0], this.scene.models[i].center.values[1][0] + this.scene.models[i].height, this.scene.models[i].center.values[2][0], 1));
                 //console.log(v);
                 
                 let newVertices = [];
                 // project to 2D
-                for(let j = 0; j < this.v.length; j++) {
-                    newVertices.push(Matrix.multiply([mat4x4Perspective(this.scene.view.prp,this.scene.view.srp,this.scene.view.vup, this.scene.view.clip), this.v[j]]));
+                for(let j = 0; j < this.vcone.length; j++) {
+                    newVertices.push(Matrix.multiply([mat4x4Perspective(this.scene.view.prp,this.scene.view.srp,this.scene.view.vup, this.scene.view.clip), this.vcone[j]]));
                 }
     
                 // clip in 3D 
@@ -443,7 +425,7 @@ class Renderer {
             // top vertices and edges
             for(let j = 0; j < this.scene.models[0].sides; j++){
                 let theta = (j + 1)*a;
-                this.v.push(Vector4((this.scene.models[0].center.values[0][0] + this.scene.models[0].radius*Math.cos(theta)), 
+                this.vcyl.push(Vector4((this.scene.models[0].center.values[0][0] + this.scene.models[0].radius*Math.cos(theta)), 
                     (this.scene.models[0].center.values[1][0] + (this.scene.models[0].height)/2), 
                     (this.scene.models[0].center.values[2][0]+this.scene.models[0].radius*Math.sin(theta)), 
                     1));
@@ -461,7 +443,7 @@ class Renderer {
             // bottom vertices
             for(let j = 0; j < this.scene.models[0].sides; j++){
                 let theta = (j + 1)*a;
-                this.v.push(Vector4((this.scene.models[0].center.values[0][0] + this.scene.models[0].radius*Math.cos(theta)), 
+                this.vcyl.push(Vector4((this.scene.models[0].center.values[0][0] + this.scene.models[0].radius*Math.cos(theta)), 
                     (this.scene.models[0].center.values[1][0] - (this.scene.models[0].height)/2), 
                     (this.scene.models[0].center.values[2][0]+this.scene.models[0].radius*Math.sin(theta)), 
                     1));
@@ -474,8 +456,8 @@ class Renderer {
 
             let newVertices = [];
             // project to 2D
-            for(let j = 0; j < this.v.length; j++) {
-                newVertices.push(Matrix.multiply([mat4x4Perspective(this.scene.view.prp,this.scene.view.srp,this.scene.view.vup, this.scene.view.clip), this.v[j]]));
+            for(let j = 0; j < this.vcyl.length; j++) {
+                newVertices.push(Matrix.multiply([mat4x4Perspective(this.scene.view.prp,this.scene.view.srp,this.scene.view.vup, this.scene.view.clip), this.vcyl[j]]));
             }
 
 
@@ -544,7 +526,7 @@ class Renderer {
                 for(let j = 0; j < this.scene.models[i].slices; j++){
                     let theta = (j)*a;
                     
-                    this.v.push(Vector4((this.scene.models[i].center.values[0][0] + (this.scene.models[i].radius*Math.cos(phi))*Math.cos(theta)), 
+                    this.vs.push(Vector4((this.scene.models[i].center.values[0][0] + (this.scene.models[i].radius*Math.cos(phi))*Math.cos(theta)), 
                         (this.scene.models[i].center.values[1][0] +  (this.scene.models[i].radius*Math.cos(phi))*Math.sin(theta)), 
                         (this.scene.models[i].center.values[2][0] + this.scene.models[i].radius*Math.sin(phi)), 
                         1));
@@ -561,8 +543,8 @@ class Renderer {
 
             let newVertices = [];
             // project to 2D
-            for(let j = 0; j < this.v.length; j++) {
-                newVertices.push(Matrix.multiply([mat4x4Perspective(this.scene.view.prp,this.scene.view.srp,this.scene.view.vup, this.scene.view.clip), this.v[j]]));
+            for(let j = 0; j < this.vs.length; j++) {
+                newVertices.push(Matrix.multiply([mat4x4Perspective(this.scene.view.prp,this.scene.view.srp,this.scene.view.vup, this.scene.view.clip), this.vs[j]]));
             }
 
             // clip in 3D 
@@ -799,6 +781,7 @@ class Renderer {
         let time = timestamp - this.start_time;
         let delta_time = timestamp - this.prev_time;
 
+    
         // Update transforms for animation
         this.updateTransforms(time, delta_time);
 
