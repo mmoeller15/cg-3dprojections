@@ -18,6 +18,7 @@ class Renderer {
         this.enable_animation = false;  // <-- disabled for easier debugging; enable for animation
         this.start_time = null;
         this.prev_time = null;
+        this.v = [];
     }
 
     //
@@ -27,7 +28,52 @@ class Renderer {
 
     //
     rotateLeft() {
-        
+        if(this.scene.models[0].type !== 'generic'){
+            //this.draw();
+            let center = this.scene.models[0].center;
+            //console.log(center.x);
+            //let center = {x: 10, y: 10, z: -45};
+
+            // matrix to translate back to origin
+            let transform = new Matrix(4, 4);
+            mat4x4Translate(transform, -center.x, -center.y, -center.z);
+
+            let rotate = new Matrix(4, 4);
+            mat4x4RotateY(rotate, -0.5);
+
+            let ret = new Matrix(4, 4);
+            mat4x4Translate(ret, center.x, center.y, center.z);
+            
+            let done = Matrix.multiply([ret, rotate, transform]);
+            //let done2 = Matrix.multiply(done, transform);
+
+            for(let i = 0; i < this.v.length; i++) {
+                this.v[i] = Matrix.multiply([done, this.v[i]]);
+            }
+            this.draw();
+        }
+        else {
+            let center = {x: 10, y: 10, z: -45};
+            // matrix to translate back to origin
+            let transform = new Matrix(4, 4);
+            mat4x4Translate(transform, -center.x, -center.y, -center.z);
+
+            let rotate = new Matrix(4, 4);
+            mat4x4RotateY(rotate, -0.5);
+
+            let ret = new Matrix(4, 4);
+            mat4x4Translate(ret, center.x, center.y, center.z);
+            
+            let done = Matrix.multiply([ret, rotate, transform]);
+            //let done2 = Matrix.multiply(done, transform);
+
+            for(let i = 0; i < this.scene.models[0].vertices.length; i++) {
+                this.scene.models[0].vertices[i] = Matrix.multiply([done, this.scene.models[0].vertices[i]]);
+            }
+            this.draw();
+        }
+
+        /*
         let n = this.scene.view.prp.subtract(this.scene.view.srp);
         n.normalize();
         let u = this.scene.view.vup.cross(n);
@@ -37,10 +83,57 @@ class Renderer {
 
         this.scene.view.srp = this.scene.view.srp.add(v);
         this.draw()
+        */
+        
     }
     
     //
     rotateRight() {
+        if(this.scene.models[0].type !== 'generic'){
+            //this.draw();
+            let center = this.scene.models[0].center;
+            //console.log(center.x);
+            //let center = {x: 10, y: 10, z: -45};
+
+            // matrix to translate back to origin
+            let transform = new Matrix(4, 4);
+            mat4x4Translate(transform, -center.x, -center.y, -center.z);
+
+            let rotate = new Matrix(4, 4);
+            mat4x4RotateY(rotate, 0.5);
+
+            let ret = new Matrix(4, 4);
+            mat4x4Translate(ret, center.x, center.y, center.z);
+            
+            let done = Matrix.multiply([ret, rotate, transform]);
+            //let done2 = Matrix.multiply(done, transform);
+
+            for(let i = 0; i < this.v.length; i++) {
+                this.v[i] = Matrix.multiply([done, this.v[i]]);
+            }
+            this.draw();
+        }
+        else {
+            let center = {x: 10, y: 10, z: -45};
+            // matrix to translate back to origin
+            let transform = new Matrix(4, 4);
+            mat4x4Translate(transform, -center.x, -center.y, -center.z);
+
+            let rotate = new Matrix(4, 4);
+            mat4x4RotateY(rotate, 0.5);
+
+            let ret = new Matrix(4, 4);
+            mat4x4Translate(ret, center.x, center.y, center.z);
+            
+            let done = Matrix.multiply([ret, rotate, transform]);
+            //let done2 = Matrix.multiply(done, transform);
+
+            for(let i = 0; i < this.scene.models[0].vertices.length; i++) {
+                this.scene.models[0].vertices[i] = Matrix.multiply([done, this.scene.models[0].vertices[i]]);
+            }
+            this.draw();
+        }
+        /*
         let n = this.scene.view.prp.subtract(this.scene.view.srp);
         n.normalize();
         let u = this.scene.view.vup.cross(n);
@@ -49,6 +142,7 @@ class Renderer {
         
         this.scene.view.srp = this.scene.view.srp.subtract(v);
         this.draw()
+        */
     }
     
     //
@@ -180,21 +274,21 @@ class Renderer {
                     edges.push([]);
                 }
                 //front top left 
-                v.push(Vector4(this.scene.models[i].center.values[0][0]-this.scene.models[i].width/2, this.scene.models[i].center.values[1][0]+this.scene.models[i].height/2, this.scene.models[i].center.values[2][0]+this.scene.models[i].depth/2, 1));
+                this.v.push(Vector4(this.scene.models[i].center.values[0][0]-this.scene.models[i].width/2, this.scene.models[i].center.values[1][0]+this.scene.models[i].height/2, this.scene.models[i].center.values[2][0]+this.scene.models[i].depth/2, 1));
                 //back top left
-                v.push(Vector4(this.scene.models[i].center.values[0][0]-this.scene.models[i].width/2, this.scene.models[i].center.values[1][0]+this.scene.models[i].height/2, this.scene.models[i].center.values[2][0]-this.scene.models[i].depth/2, 1));
+                this.v.push(Vector4(this.scene.models[i].center.values[0][0]-this.scene.models[i].width/2, this.scene.models[i].center.values[1][0]+this.scene.models[i].height/2, this.scene.models[i].center.values[2][0]-this.scene.models[i].depth/2, 1));
                 //back top right
-                v.push(Vector4(this.scene.models[i].center.values[0][0]+this.scene.models[i].width/2, this.scene.models[i].center.values[1][0]+this.scene.models[i].height/2, this.scene.models[i].center.values[2][0]-this.scene.models[i].depth/2, 1));
+                this.v.push(Vector4(this.scene.models[i].center.values[0][0]+this.scene.models[i].width/2, this.scene.models[i].center.values[1][0]+this.scene.models[i].height/2, this.scene.models[i].center.values[2][0]-this.scene.models[i].depth/2, 1));
                 //front top right
-                v.push(Vector4(this.scene.models[i].center.values[0][0]+this.scene.models[i].width/2, this.scene.models[i].center.values[1][0]+this.scene.models[i].height/2, this.scene.models[i].center.values[2][0]+this.scene.models[i].depth/2, 1));
+                this.v.push(Vector4(this.scene.models[i].center.values[0][0]+this.scene.models[i].width/2, this.scene.models[i].center.values[1][0]+this.scene.models[i].height/2, this.scene.models[i].center.values[2][0]+this.scene.models[i].depth/2, 1));
                 //front bottom left
-                v.push(Vector4(this.scene.models[i].center.values[0][0]-this.scene.models[i].width/2, this.scene.models[i].center.values[1][0]-this.scene.models[i].height/2, this.scene.models[i].center.values[2][0]+this.scene.models[i].depth/2, 1));
+                this.v.push(Vector4(this.scene.models[i].center.values[0][0]-this.scene.models[i].width/2, this.scene.models[i].center.values[1][0]-this.scene.models[i].height/2, this.scene.models[i].center.values[2][0]+this.scene.models[i].depth/2, 1));
                 //back bottom left
-                v.push(Vector4(this.scene.models[i].center.values[0][0]-this.scene.models[i].width/2, this.scene.models[i].center.values[1][0]-this.scene.models[i].height/2, this.scene.models[i].center.values[2][0]-this.scene.models[i].depth/2, 1));
+                this.v.push(Vector4(this.scene.models[i].center.values[0][0]-this.scene.models[i].width/2, this.scene.models[i].center.values[1][0]-this.scene.models[i].height/2, this.scene.models[i].center.values[2][0]-this.scene.models[i].depth/2, 1));
                 //back bottom right
-                v.push(Vector4(this.scene.models[i].center.values[0][0]+this.scene.models[i].width/2, this.scene.models[i].center.values[1][0]-this.scene.models[i].height/2, this.scene.models[i].center.values[2][0]-this.scene.models[i].depth/2, 1));
+                this.v.push(Vector4(this.scene.models[i].center.values[0][0]+this.scene.models[i].width/2, this.scene.models[i].center.values[1][0]-this.scene.models[i].height/2, this.scene.models[i].center.values[2][0]-this.scene.models[i].depth/2, 1));
                 //front bottom right
-                v.push(Vector4(this.scene.models[i].center.values[0][0]+this.scene.models[i].width/2, this.scene.models[i].center.values[1][0]-this.scene.models[i].height/2, this.scene.models[i].center.values[2][0]+this.scene.models[i].depth/2, 1));
+                this.v.push(Vector4(this.scene.models[i].center.values[0][0]+this.scene.models[i].width/2, this.scene.models[i].center.values[1][0]-this.scene.models[i].height/2, this.scene.models[i].center.values[2][0]+this.scene.models[i].depth/2, 1));
                 console.log(this.scene.models[i].center.values[2][0]);
                 edges[0].push([0], [1], [2], [3], [0]);
                 edges[1].push([4], [5], [6], [7], [4]);
@@ -204,8 +298,8 @@ class Renderer {
 
                 let newVertices = [];
                 // project to 2D
-                for(let j = 0; j < v.length; j++) {
-                    newVertices.push(Matrix.multiply([mat4x4Perspective(this.scene.view.prp,this.scene.view.srp,this.scene.view.vup, this.scene.view.clip), v[j]]));
+                for(let j = 0; j < this.v.length; j++) {
+                    newVertices.push(Matrix.multiply([mat4x4Perspective(this.scene.view.prp,this.scene.view.srp,this.scene.view.vup, this.scene.view.clip), this.v[j]]));
                 }
                 
                 // clip in 3D 
@@ -242,20 +336,20 @@ class Renderer {
                 }
     
                 for(let j = 0; j < lines.length; j++){
-                    for(let k = 0; k < lines[j].length-1; k++){ 
+                    for(let k = 0; k <lines[j].length-1; k++){ 
                         if(lines[j][k] != null && lines[j][k+1] != null){
                             this.drawLine(lines[j][k].values[0], lines[j][k].values[1], lines[j][k+1].values[0], lines[j][k+1].values[1])
                         }
                     }
                 } 
-
+                console.log(lines);
 
 
             }
 
         
             if(this.scene.models[0].type === 'cone') {
-                let v = [];
+                //let v = [];
                 let edges = [];
                 //create enough space for each edge
                 for(let index = 0; index < this.scene.models[0].sides+1; index++){
@@ -264,7 +358,7 @@ class Renderer {
                 let a = (2*Math.PI)/this.scene.models[i].sides;
                 for(let j = 0; j < this.scene.models[i].sides; j++){
                     let theta = (j + 1)*a;
-                    v.push(Vector4((this.scene.models[i].center.values[0][0] + this.scene.models[i].radius*Math.cos(theta)), 
+                    this.v.push(Vector4((this.scene.models[i].center.values[0][0] + this.scene.models[i].radius*Math.cos(theta)), 
                         (this.scene.models[i].center.values[1][0]), 
                         (this.scene.models[i].center.values[2][0]+this.scene.models[i].radius*Math.sin(theta)), 
                         1));
@@ -277,13 +371,13 @@ class Renderer {
                 console.log('cone');
                 console.log(edges)
                 //edges.push(0)
-                v.push(Vector4(this.scene.models[i].center.values[0][0], this.scene.models[i].center.values[1][0] + this.scene.models[i].height, this.scene.models[i].center.values[2][0], 1));
+                this.v.push(Vector4(this.scene.models[i].center.values[0][0], this.scene.models[i].center.values[1][0] + this.scene.models[i].height, this.scene.models[i].center.values[2][0], 1));
                 //console.log(v);
                 
                 let newVertices = [];
                 // project to 2D
-                for(let j = 0; j < v.length; j++) {
-                    newVertices.push(Matrix.multiply([mat4x4Perspective(this.scene.view.prp,this.scene.view.srp,this.scene.view.vup, this.scene.view.clip), v[j]]));
+                for(let j = 0; j < this.v.length; j++) {
+                    newVertices.push(Matrix.multiply([mat4x4Perspective(this.scene.view.prp,this.scene.view.srp,this.scene.view.vup, this.scene.view.clip), this.v[j]]));
                 }
     
                 // clip in 3D 
@@ -337,7 +431,7 @@ class Renderer {
         if(this.scene.models[0].type === 'cylinder'){
             console.log('cylinder');
             // center (3-component array), radius, height, sides
-            let v = [];
+            //let v = [];
             let edges = [];
             //create enough space for each edge
             for(let index = 0; index < this.scene.models[0].sides+2; index++){
@@ -349,7 +443,7 @@ class Renderer {
             // top vertices and edges
             for(let j = 0; j < this.scene.models[0].sides; j++){
                 let theta = (j + 1)*a;
-                v.push(Vector4((this.scene.models[0].center.values[0][0] + this.scene.models[0].radius*Math.cos(theta)), 
+                this.v.push(Vector4((this.scene.models[0].center.values[0][0] + this.scene.models[0].radius*Math.cos(theta)), 
                     (this.scene.models[0].center.values[1][0] + (this.scene.models[0].height)/2), 
                     (this.scene.models[0].center.values[2][0]+this.scene.models[0].radius*Math.sin(theta)), 
                     1));
@@ -367,7 +461,7 @@ class Renderer {
             // bottom vertices
             for(let j = 0; j < this.scene.models[0].sides; j++){
                 let theta = (j + 1)*a;
-                v.push(Vector4((this.scene.models[0].center.values[0][0] + this.scene.models[0].radius*Math.cos(theta)), 
+                this.v.push(Vector4((this.scene.models[0].center.values[0][0] + this.scene.models[0].radius*Math.cos(theta)), 
                     (this.scene.models[0].center.values[1][0] - (this.scene.models[0].height)/2), 
                     (this.scene.models[0].center.values[2][0]+this.scene.models[0].radius*Math.sin(theta)), 
                     1));
@@ -380,8 +474,8 @@ class Renderer {
 
             let newVertices = [];
             // project to 2D
-            for(let j = 0; j < v.length; j++) {
-                newVertices.push(Matrix.multiply([mat4x4Perspective(this.scene.view.prp,this.scene.view.srp,this.scene.view.vup, this.scene.view.clip), v[j]]));
+            for(let j = 0; j < this.v.length; j++) {
+                newVertices.push(Matrix.multiply([mat4x4Perspective(this.scene.view.prp,this.scene.view.srp,this.scene.view.vup, this.scene.view.clip), this.v[j]]));
             }
 
 
@@ -434,7 +528,7 @@ class Renderer {
         if(this.scene.models[0].type === 'sphere'){
             console.log('sphere');
             // center (3-component array), radius, slices, stacks
-            let v = [];
+            //let v = [];
             let edges = []
             
             for(let index = 0; index < (this.scene.models[i].slices+this.scene.models[i].stacks+2); index++){
@@ -450,7 +544,7 @@ class Renderer {
                 for(let j = 0; j < this.scene.models[i].slices; j++){
                     let theta = (j)*a;
                     
-                    v.push(Vector4((this.scene.models[i].center.values[0][0] + (this.scene.models[i].radius*Math.cos(phi))*Math.cos(theta)), 
+                    this.v.push(Vector4((this.scene.models[i].center.values[0][0] + (this.scene.models[i].radius*Math.cos(phi))*Math.cos(theta)), 
                         (this.scene.models[i].center.values[1][0] +  (this.scene.models[i].radius*Math.cos(phi))*Math.sin(theta)), 
                         (this.scene.models[i].center.values[2][0] + this.scene.models[i].radius*Math.sin(phi)), 
                         1));
@@ -459,15 +553,16 @@ class Renderer {
                     edges[this.scene.models[i].stacks +1 + j].push(j + k*(this.scene.models[i].slices))
                     
                 }
-
+                
             // set last edge back to beginning edge to connect
             edges[k].push([(k*this.scene.models[i].slices)])
             }
+            console.log(this.v);
 
             let newVertices = [];
             // project to 2D
-            for(let j = 0; j < v.length; j++) {
-                newVertices.push(Matrix.multiply([mat4x4Perspective(this.scene.view.prp,this.scene.view.srp,this.scene.view.vup, this.scene.view.clip), v[j]]));
+            for(let j = 0; j < this.v.length; j++) {
+                newVertices.push(Matrix.multiply([mat4x4Perspective(this.scene.view.prp,this.scene.view.srp,this.scene.view.vup, this.scene.view.clip), this.v[j]]));
             }
 
             // clip in 3D 
