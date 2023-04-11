@@ -64,7 +64,7 @@ function init() {
             clip: [-12, 6, -12, 6, 10, 100]
         },
         models: [
-            /*
+            
             {
                 type: 'generic',
                 vertices: [
@@ -93,8 +93,9 @@ function init() {
                 //     axis: "y",
                 //     rps: 4
                 // }
-            },
-            */
+            }
+            
+           /*
             {
                 type: 'cube',
                 center: [ 0.0, 0.0, -40.0],
@@ -118,7 +119,7 @@ function init() {
                     rps: 4
                 }
                 
-            }/*,
+            },
             {
                 type: 'cylinder',
                 center: [ 6.0 , -7.0, -30.0],
