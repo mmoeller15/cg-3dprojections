@@ -15,7 +15,7 @@ class Renderer {
         this.canvas.height = canvas.height;
         this.ctx = this.canvas.getContext('2d');
         this.scene = this.processScene(scene);
-        this.enable_animation = true;  // <-- disabled for easier debugging; enable for animation
+        this.enable_animation = false;  // <-- disabled for easier debugging; enable for animation
         this.start_time = null;
         this.prev_time = null;
         this.v = [];
@@ -185,7 +185,7 @@ class Renderer {
 
 
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
+        console.log(this.scene.models);
         console.log('draw()');
         console.log(this.scene);
         
@@ -247,7 +247,7 @@ class Renderer {
             
             }
 
-            if(this.scene.models[0].type === 'cube') {
+            if(this.scene.models[i].type === 'cube') {
 
                 let v = []
                 let edges = [];
@@ -330,11 +330,11 @@ class Renderer {
             }
 
         
-            if(this.scene.models[0].type === 'cone') {
+            if(this.scene.models[i].type === 'cone') {
                 //let v = [];
                 let edges = [];
                 //create enough space for each edge
-                for(let index = 0; index < this.scene.models[0].sides+1; index++){
+                for(let index = 0; index < this.scene.models[i].sides+1; index++){
                     edges.push([]);
                 }
                 let a = (2*Math.PI)/this.scene.models[i].sides;
@@ -410,48 +410,48 @@ class Renderer {
             }
         
         
-        if(this.scene.models[0].type === 'cylinder'){
+        if(this.scene.models[i].type === 'cylinder'){
             console.log('cylinder');
             // center (3-component array), radius, height, sides
             //let v = [];
             let edges = [];
             //create enough space for each edge
-            for(let index = 0; index < this.scene.models[0].sides+2; index++){
+            for(let index = 0; index < this.scene.models[i].sides+2; index++){
                 edges.push([]);
             }
             
-            let a = (2*Math.PI)/this.scene.models[0].sides;
+            let a = (2*Math.PI)/this.scene.models[i].sides;
             
             // top vertices and edges
-            for(let j = 0; j < this.scene.models[0].sides; j++){
+            for(let j = 0; j < this.scene.models[i].sides; j++){
                 let theta = (j + 1)*a;
-                this.vcyl.push(Vector4((this.scene.models[0].center.values[0][0] + this.scene.models[0].radius*Math.cos(theta)), 
-                    (this.scene.models[0].center.values[1][0] + (this.scene.models[0].height)/2), 
-                    (this.scene.models[0].center.values[2][0]+this.scene.models[0].radius*Math.sin(theta)), 
+                this.vcyl.push(Vector4((this.scene.models[i].center.values[0][0] + this.scene.models[i].radius*Math.cos(theta)), 
+                    (this.scene.models[i].center.values[1][0] + (this.scene.models[i].height)/2), 
+                    (this.scene.models[i].center.values[2][0]+this.scene.models[i].radius*Math.sin(theta)), 
                     1));
                 
                 // top edges
                 edges[0].push([j])
                 // bottom edges
-                edges[1].push([j+this.scene.models[0].sides])
+                edges[1].push([j+this.scene.models[i].sides])
                 // top to bottom edges
                 edges[j+2].push([j])
-                edges[j+2].push([j+this.scene.models[0].sides])
+                edges[j+2].push([j+this.scene.models[i].sides])
             }
             console.log(edges);
 
             // bottom vertices
-            for(let j = 0; j < this.scene.models[0].sides; j++){
+            for(let j = 0; j < this.scene.models[i].sides; j++){
                 let theta = (j + 1)*a;
-                this.vcyl.push(Vector4((this.scene.models[0].center.values[0][0] + this.scene.models[0].radius*Math.cos(theta)), 
-                    (this.scene.models[0].center.values[1][0] - (this.scene.models[0].height)/2), 
-                    (this.scene.models[0].center.values[2][0]+this.scene.models[0].radius*Math.sin(theta)), 
+                this.vcyl.push(Vector4((this.scene.models[i].center.values[0][0] + this.scene.models[i].radius*Math.cos(theta)), 
+                    (this.scene.models[i].center.values[1][0] - (this.scene.models[i].height)/2), 
+                    (this.scene.models[i].center.values[2][0]+this.scene.models[i].radius*Math.sin(theta)), 
                     1));
             }
 
             // set last edge back to beginning edge to connect
             edges[0].push([0])
-            edges[1].push([this.scene.models[0].sides])
+            edges[1].push([this.scene.models[i].sides])
 
 
             let newVertices = [];

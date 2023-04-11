@@ -87,6 +87,27 @@ function init() {
                     [3, 8],
                     [4, 9]
                 ]
+            },
+            {
+                type: 'cube',
+                center: [ -12.0,  12.0, -40.0],
+                width: 5,
+                height: 5,
+                depth: 5
+            },
+            {
+                type: 'cone',
+                center: [ 0.0,  30.0, -30.0],
+                radius: 4,
+                height: 9,
+                sides: 10
+            },
+            {
+                type: 'cylinder',
+                center: [6.0,  -7.0, -30.0],
+                radius: 2,
+                height: 8,
+                sides: 25
             }
         ]
     };
