@@ -64,6 +64,7 @@ function init() {
             clip: [-12, 6, -12, 6, 10, 100]
         },
         models: [
+            /*
             {
                 type: 'generic',
                 vertices: [
@@ -93,17 +94,18 @@ function init() {
                 //     rps: 4
                 // }
             },
+            */
             {
                 type: 'cube',
-                center: [ -12.0, 12.0, -40.0],
+                center: [ 0.0, 0.0, -40.0],
                 width: 5,
                 height: 5,
-                depth: 5/*,
+                depth: 5,
                 animation: {
-                    axis: 'y',
+                    axis: 'x',
                     rps: 4
                 }
-                */
+                
             },
             {
                 type: 'cone',
@@ -116,31 +118,32 @@ function init() {
                     rps: 4
                 }
                 
-            },
+            }/*,
             {
                 type: 'cylinder',
                 center: [ 6.0 , -7.0, -30.0],
                 radius: 2,
                 height: 8,
-                sides: 5/*,
+                sides: 5,
                 animation: {
                     axis: 'y',
                     rps: 4
                 }
-                */
+                
             },
             {
                 type: 'sphere',
                 center: [ 0.0, 20.0, -30.0],
                 radius: 5,
                 slices: 10,
-                stacks: 10/*,
+                stacks: 10,
                 animation: {
                     axis: 'y',
                     rps: 4
                 }
-                */
+                
             }
+            */
         ] 
         
     };

@@ -391,8 +391,7 @@ class Renderer {
                     edges[j+1].push([j], [this.scene.models[i].sides]);
                 }
                 edges[0].push([0]);
-                console.log('cone');
-                console.log(edges)
+   
                 //edges.push(0)
                 this.vcone.push(Vector4(this.scene.models[i].center.values[0][0], this.scene.models[i].center.values[1][0] + this.scene.models[i].height, this.scene.models[i].center.values[2][0], 1));
                 //console.log(v);
@@ -452,7 +451,7 @@ class Renderer {
         
         
         if(this.scene.models[i].type === 'cylinder'){
-            console.log('cylinder');
+            //console.log('cylinder');
             // center (3-component array), radius, height, sides
             //let v = [];
             let edges = [];
@@ -548,7 +547,7 @@ class Renderer {
 
 
         if(this.scene.models[i].type === 'sphere'){
-            console.log('sphere');
+            // console.log('sphere');
             // center (3-component array), radius, slices, stacks
             //let v = [];
             let edges = []
@@ -579,7 +578,7 @@ class Renderer {
             // set last edge back to beginning edge to connect
             edges[k].push([(k*this.scene.models[i].slices)])
             }
-            console.log(this.v);
+            // console.log(this.v);
 
             let newVertices = [];
             // project to 2D
