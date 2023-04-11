@@ -129,7 +129,7 @@ class Renderer {
         mat4x4Translate(translateBack, -this.scene.view.prp.x, -this.scene.view.prp.y, -this.scene.view.prp.z)
         let srp = new Vector4(this.scene.view.srp.x, this.scene.view.srp.y, this.scene.view.srp.z, 1)
 
-        mat4x4VRotation(rotation, 5, v);
+        mat4x4VRotation(rotation, -5, v);
 
 
         let rotateShift = Matrix.multiply([translateToOrigin, rotation, translateBack, srp]);
@@ -159,7 +159,7 @@ class Renderer {
         mat4x4Translate(translateBack, -this.scene.view.prp.x, -this.scene.view.prp.y, -this.scene.view.prp.z)
         let srp = new Vector4(this.scene.view.srp.x, this.scene.view.srp.y, this.scene.view.srp.z, 1)
 
-        mat4x4VRotation(rotation, -5, v);
+        mat4x4VRotation(rotation, 5, v);
 
 
         let rotateShift = Matrix.multiply([translateToOrigin, rotation, translateBack, srp]);
@@ -181,8 +181,8 @@ class Renderer {
         let u = this.scene.view.vup.cross(n);
         u.normalize();
 
-        this.scene.view.srp = this.scene.view.srp.add(u);
-        this.scene.view.prp= this.scene.view.prp.add(u);
+        this.scene.view.srp = this.scene.view.srp.subtract(u);
+        this.scene.view.prp= this.scene.view.prp.subtract(u);
         this.draw()
     }
     
@@ -193,8 +193,8 @@ class Renderer {
         let u = this.scene.view.vup.cross(n);
         u.normalize();
 
-        this.scene.view.srp = this.scene.view.srp.subtract(u);
-        this.scene.view.prp= this.scene.view.prp.subtract(u);
+        this.scene.view.srp = this.scene.view.srp.add(u);
+        this.scene.view.prp= this.scene.view.prp.add(u);
         this.draw()
     }
     
@@ -203,8 +203,8 @@ class Renderer {
         let n = this.scene.view.prp.subtract(this.scene.view.srp);
         n.normalize();
 
-        this.scene.view.srp = this.scene.view.srp.subtract(n);
-        this.scene.view.prp= this.scene.view.prp.subtract(n);
+        this.scene.view.srp = this.scene.view.srp.add(n);
+        this.scene.view.prp= this.scene.view.prp.add(n);
         this.draw()
     }
     
@@ -213,8 +213,8 @@ class Renderer {
         let n = this.scene.view.prp.subtract(this.scene.view.srp);
         n.normalize();
   
-        this.scene.view.srp = this.scene.view.srp.add(n);
-        this.scene.view.prp= this.scene.view.prp.add(n);
+        this.scene.view.srp = this.scene.view.srp.subtract(n);
+        this.scene.view.prp= this.scene.view.prp.subtract(n);
         this.draw()
     }
 
