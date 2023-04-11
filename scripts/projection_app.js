@@ -87,29 +87,62 @@ function init() {
                     [3, 8],
                     [4, 9]
                 ]
+                // ,
+                // animation: {
+                //     axis: "y",
+                //     rps: 4
+                // }
             },
             {
                 type: 'cube',
-                center: [ -12.0,  12.0, -40.0],
+                center: [ -12.0, 12.0, -40.0],
                 width: 5,
                 height: 5,
-                depth: 5
+                depth: 5/*,
+                animation: {
+                    axis: 'y',
+                    rps: 4
+                }
+                */
             },
             {
                 type: 'cone',
-                center: [ 0.0,  30.0, -30.0],
+                center: [ 0.0, 30.0, -30.0],
                 radius: 4,
                 height: 9,
-                sides: 10
+                sides: 4,
+                animation: {
+                    axis: 'y',
+                    rps: 4
+                }
+                
             },
             {
                 type: 'cylinder',
-                center: [6.0,  -7.0, -30.0],
+                center: [ 6.0 , -7.0, -30.0],
                 radius: 2,
                 height: 8,
-                sides: 25
+                sides: 5/*,
+                animation: {
+                    axis: 'y',
+                    rps: 4
+                }
+                */
+            },
+            {
+                type: 'sphere',
+                center: [ 0.0, 20.0, -30.0],
+                radius: 5,
+                slices: 10,
+                stacks: 10/*,
+                animation: {
+                    axis: 'y',
+                    rps: 4
+                }
+                */
             }
-        ]
+        ] 
+        
     };
 
     document.addEventListener('keydown', app.onKeyDown, false);

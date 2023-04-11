@@ -1,0 +1,24 @@
+{
+    "view": {
+        "prp": [44, 20, -16],
+        "srp": [20, 20, -40],
+        "vup": [0, 1, 0],
+        "clip": [-19, 5, -10, 8, 12, 100]
+    },
+    "models": [
+        {
+            "type": "cube",
+            "center": [ 0.0,  10.0, -30.0],
+            "width": 20,
+            "height": 20,
+            "depth": 20
+        },
+        {
+            "type": "cylinder",
+            "center": [0.0,  0.0, -30.0],
+            "radius": 8,
+            "height": 20,
+            "sides": 25
+        }
+    ]
+    }
