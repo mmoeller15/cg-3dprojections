@@ -2,13 +2,16 @@
 function mat4x4Perspective(prp, srp, vup, clip) { 
     // 1. translate PRP to origin
     let t_prp = new Matrix(4,4);
-    t_prp.values = [[1, 0, 0, -prp.values[0]],
-                   [0, 1, 0, -prp.values[1]],
-                   [0, 0, 1, -prp.values[2]],
+    t_prp.values = [[1, 0, 0, -(prp.values[0])],
+                   [0, 1, 0, -(prp.values[1])],
+                   [0, 0, 1, -(prp.values[2])],
                    [0, 0, 0, 1]];
     // 2. rotate VRC such that (u,v,n) align with (x,y,z)
     let n = prp.subtract(srp);
+    //console.log("n=");
+    //console.log(n);
     n.normalize();
+    
     let u = vup.cross(n);
     u.normalize();
     let v = n.cross(u);
@@ -39,6 +42,7 @@ function mat4x4Perspective(prp, srp, vup, clip) {
     // return transform;
 
     let transform = Matrix.multiply([s_per, sh_per, r, t_prp]);
+    let final = Matrix.multiply([mat4x4MPer(), transform]);
     return transform;
 }
 
@@ -121,6 +125,34 @@ function mat4x4ShearXY(mat4x4, shx, shy) {
                      [0, 1, shy, 0],
                      [0, 0, 1, 0],
                      [0, 0, 0, 1]];
+}
+
+
+// for rotation around v-axis
+function mat4x4VRotation(mat4x4, theta, v){
+    theta = theta * (Math.PI/180);
+    mat4x4.values = [
+                    [  (Math.cos(theta) + (Math.pow(v.x, 2)) * (1 - Math.cos(theta))), 
+                       (v.x * v.y * (1 - Math.cos(theta)) - (v.z * Math.sin(theta))), 
+                       (v.x * v.z * (1 - Math.cos(theta)) + (v.y * Math.sin(theta))),
+                       0
+                    ],
+                    [
+                       (v.y * v.x * (1 - Math.cos(theta)) + (v.z * Math.sin(theta))),
+                       (Math.cos(theta) + (Math.pow(v.y, 2) * (1 - Math.cos(theta)))),
+                       (v.y * v.z * (1 - Math.cos(theta)) - (v.x * Math.sin(theta))),
+                       0
+                    ],
+                    [
+                       (v.z * v.x * (1 - Math.cos(theta)) - (v.y * Math.sin(theta))),
+                       (v.z * v.y * (1 - Math.cos(theta)) - (v.x * Math.sin(theta))),
+                       (Math.cos(theta) + (Math.pow(v.z, 2) * (1 - Math.cos(theta)))),
+                       0
+                    ],
+                    [
+                        0, 0, 0, 1
+                    ]
+                ]
 }
 
 // create a new 3-component vector with values x,y,z

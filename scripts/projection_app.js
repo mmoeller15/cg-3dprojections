@@ -54,14 +54,14 @@ function init() {
 
     let initial_scene = {
         view: { 
-            prp: [44, 20, -16],
-            srp: [20, 20, -40],
-            vup: [0, 1, 0],
-            clip: [-19, 5, -10, 8, 12, 100]
-            // prp: [0, 10, -5],
-            // srp: [20, 15, -40],
-            // vup: [1, 1, 0],
-            // clip: [-12, 6, -12, 6, 10, 100]
+            // prp: [44, 20, -16],
+            // srp: [20, 20, -40],
+            // vup: [0, 1, 0],
+            // clip: [-19, 5, -10, 8, 12, 100]
+            prp: [0, 10, -5],
+            srp: [20, 15, -40],
+            vup: [1, 1, 0],
+            clip: [-12, 6, -12, 6, 10, 100]
         },
         models: [
             {
@@ -87,8 +87,62 @@ function init() {
                     [3, 8],
                     [4, 9]
                 ]
+                // ,
+                // animation: {
+                //     axis: "y",
+                //     rps: 4
+                // }
+            },
+            {
+                type: 'cube',
+                center: [ -12.0, 12.0, -40.0],
+                width: 5,
+                height: 5,
+                depth: 5/*,
+                animation: {
+                    axis: 'y',
+                    rps: 4
+                }
+                */
+            },
+            {
+                type: 'cone',
+                center: [ 0.0, 30.0, -30.0],
+                radius: 4,
+                height: 9,
+                sides: 4,
+                animation: {
+                    axis: 'y',
+                    rps: 4
+                }
+                
+            },
+            {
+                type: 'cylinder',
+                center: [ 6.0 , -7.0, -30.0],
+                radius: 2,
+                height: 8,
+                sides: 5/*,
+                animation: {
+                    axis: 'y',
+                    rps: 4
+                }
+                */
+            },
+            {
+                type: 'sphere',
+                center: [ 0.0, 20.0, -30.0],
+                radius: 5,
+                slices: 10,
+                stacks: 10/*,
+                animation: {
+                    axis: 'y',
+                    rps: 4
+                }
+                */
             }
-        ]
+        ] 
+        
     };
 
     document.addEventListener('keydown', app.onKeyDown, false);
