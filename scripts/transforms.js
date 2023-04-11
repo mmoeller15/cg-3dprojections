@@ -127,6 +127,34 @@ function mat4x4ShearXY(mat4x4, shx, shy) {
                      [0, 0, 0, 1]];
 }
 
+
+// for rotation around v-axis
+function mat4x4VRotation(mat4x4, theta, v){
+    theta = theta * (Math.PI/180);
+    mat4x4.values = [
+                    [  (Math.cos(theta) + (Math.pow(v.x, 2)) * (1 - Math.cos(theta))), 
+                       (v.x * v.y * (1 - Math.cos(theta)) - (v.z * Math.sin(theta))), 
+                       (v.x * v.z * (1 - Math.cos(theta)) + (v.y * Math.sin(theta))),
+                       0
+                    ],
+                    [
+                       (v.y * v.x * (1 - Math.cos(theta)) + (v.z * Math.sin(theta))),
+                       (Math.cos(theta) + (Math.pow(v.y, 2) * (1 - Math.cos(theta)))),
+                       (v.y * v.z * (1 - Math.cos(theta)) - (v.x * Math.sin(theta))),
+                       0
+                    ],
+                    [
+                       (v.z * v.x * (1 - Math.cos(theta)) - (v.y * Math.sin(theta))),
+                       (v.z * v.y * (1 - Math.cos(theta)) - (v.x * Math.sin(theta))),
+                       (Math.cos(theta) + (Math.pow(v.z, 2) * (1 - Math.cos(theta)))),
+                       0
+                    ],
+                    [
+                        0, 0, 0, 1
+                    ]
+                ]
+}
+
 // create a new 3-component vector with values x,y,z
 function Vector3(x, y, z) {
     let vec3 = new Vector(3);

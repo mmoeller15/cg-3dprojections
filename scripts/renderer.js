@@ -27,9 +27,14 @@ class Renderer {
     //
     updateTransforms(time, delta_time) {
         // TODO: update any transformations needed for animation
-        if(this.scene.models[0].type !== 'generic'){
+        for(let m = 0; m < this.scene.models.length; m++){
+        
+
+        if(this.scene.models[m].animation != null) {
+
+        if(this.scene.models[m].type !== 'generic'){
             //this.draw();
-            let center = this.scene.models[0].center;
+            let center = this.scene.models[m].center;
             //console.log(center.x);
             //let center = {x: 10, y: 10, z: -45};
 
@@ -38,32 +43,38 @@ class Renderer {
             mat4x4Translate(transform, -center.x, -center.y, -center.z);
 
             let rotate = new Matrix(4, 4);
-            mat4x4RotateY(rotate, delta_time/500);
+            if(this.scene.models[m].animation.axis === 'x') {
+                mat4x4RotateX(rotate, delta_time/(1000/this.scene.models[m].animation.rps));
+            } else if(this.scene.models[m].animation.axis === 'y'){
+                mat4x4RotateY(rotate, delta_time/(1000/this.scene.models[m].animation.rps));
+            } else {
+                mat4x4RotateZ(rotate, delta_time/(1000/this.scene.models[m].animation.rps));
+            }
 
             let ret = new Matrix(4, 4);
             mat4x4Translate(ret, center.x, center.y, center.z);
             
             let done = Matrix.multiply([ret, rotate, transform]);
             //let done2 = Matrix.multiply(done, transform);
-            if(this.scene.models[0].type === 'cube') {
+            if(this.scene.models[m].type === 'cube') {
                 for(let i = 0; i < this.v.length; i++) {
                     this.v[i] = Matrix.multiply([done, this.v[i]]);
                 }
                 this.draw();
             }
-            else if(this.scene.models[0].type === 'cone') {
+            else if(this.scene.models[m].type === 'cone') {
                 for(let i = 0; i < this.vcone.length; i++) {
                     this.vcone[i] = Matrix.multiply([done, this.vcone[i]]);
                 }
                 this.draw();
             }
-            else if(this.scene.models[0].type === 'cylinder') {
+            else if(this.scene.models[m].type === 'cylinder') {
                 for(let i = 0; i < this.v.length; i++) {
                     this.vcyl[i] = Matrix.multiply([done, this.vcyl[i]]);
                 }
                 this.draw();
             }
-            else if(this.scene.models[0].type === 'sphere') {
+            else if(this.scene.models[m].type === 'sphere') {
                 for(let i = 0; i < this.vs.length; i++) {
                     this.vs[i] = Matrix.multiply([done, this.vs[i]]);
                 }
@@ -77,53 +88,89 @@ class Renderer {
             mat4x4Translate(transform, -center.x, -center.y, -center.z);
 
             let rotate = new Matrix(4, 4);
-            mat4x4RotateY(rotate, delta_time/500);
-
+            if(this.scene.models[m].animation.axis === 'x') {
+                mat4x4RotateX(rotate, delta_time/(1000/this.scene.models[m].animation.rps));
+            } else if(this.scene.models[m].animation.axis === 'y'){
+                mat4x4RotateY(rotate, delta_time/(1000/this.scene.models[m].animation.rps));
+            } else {
+                mat4x4RotateZ(rotate, delta_time/(1000/this.scene.models[m].animation.rps));
+            }
+            
+  
             let ret = new Matrix(4, 4);
             mat4x4Translate(ret, center.x, center.y, center.z);
             
             let done = Matrix.multiply([ret, rotate, transform]);
             //let done2 = Matrix.multiply(done, transform);
 
-            for(let i = 0; i < this.scene.models[0].vertices.length; i++) {
-                this.scene.models[0].vertices[i] = Matrix.multiply([done, this.scene.models[0].vertices[i]]);
+            for(let i = 0; i < this.scene.models[m].vertices.length; i++) {
+                this.scene.models[m].vertices[i] = Matrix.multiply([done, this.scene.models[m].vertices[i]]);
             }
             this.draw();
         }
-        
+        }
+    }
 
     }
 
     //
     rotateLeft() {
-        
-
-        
         let n = this.scene.view.prp.subtract(this.scene.view.srp);
         n.normalize();
         let u = this.scene.view.vup.cross(n);
         u.normalize();
         let v = n.cross(u);
-
-
-        this.scene.view.srp = this.scene.view.srp.add(v);
-        this.draw()
         
+        let rotation = new Matrix(4,4);
+
+        let translateToOrigin = new Matrix(4,4);
+        mat4x4Translate(translateToOrigin, this.scene.view.prp.x, this.scene.view.prp.y, this.scene.view.prp.z)
+        let translateBack = new Matrix(4,4);
+        mat4x4Translate(translateBack, -this.scene.view.prp.x, -this.scene.view.prp.y, -this.scene.view.prp.z)
+        let srp = new Vector4(this.scene.view.srp.x, this.scene.view.srp.y, this.scene.view.srp.z, 1)
+
+        mat4x4VRotation(rotation, 5, v);
+
+
+        let rotateShift = Matrix.multiply([translateToOrigin, rotation, translateBack, srp]);
+
+        this.scene.view.srp.x = rotateShift.x;
+        this.scene.view.srp.y = rotateShift.y;
+        this.scene.view.srp.z = rotateShift.z;
+
+
+        this.draw()
         
     }
     
     //
     rotateRight() {
-        
-        
         let n = this.scene.view.prp.subtract(this.scene.view.srp);
         n.normalize();
         let u = this.scene.view.vup.cross(n);
         u.normalize();
         let v = n.cross(u);
         
-        this.scene.view.srp = this.scene.view.srp.subtract(v);
+        let rotation = new Matrix(4,4);
+
+        let translateToOrigin = new Matrix(4,4);
+        mat4x4Translate(translateToOrigin, this.scene.view.prp.x, this.scene.view.prp.y, this.scene.view.prp.z)
+        let translateBack = new Matrix(4,4);
+        mat4x4Translate(translateBack, -this.scene.view.prp.x, -this.scene.view.prp.y, -this.scene.view.prp.z)
+        let srp = new Vector4(this.scene.view.srp.x, this.scene.view.srp.y, this.scene.view.srp.z, 1)
+
+        mat4x4VRotation(rotation, -5, v);
+
+
+        let rotateShift = Matrix.multiply([translateToOrigin, rotation, translateBack, srp]);
+
+        this.scene.view.srp.x = rotateShift.x;
+        this.scene.view.srp.y = rotateShift.y;
+        this.scene.view.srp.z = rotateShift.z;
+
+
         this.draw()
+
         
     }
     
@@ -186,13 +233,8 @@ class Renderer {
 
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-        console.log('draw()');
-        console.log(this.scene);
-        
-
         //for each model in scene
         for(let i = 0; i < this.scene.models.length; i++){
-            
             
             if(this.scene.models[i].type === 'generic'){
                 let newVertices = []
@@ -247,7 +289,7 @@ class Renderer {
             
             }
 
-            if(this.scene.models[0].type === 'cube') {
+            if(this.scene.models[i].type === 'cube') {
 
                 let v = []
                 let edges = [];
@@ -271,7 +313,6 @@ class Renderer {
                 this.v.push(Vector4(this.scene.models[i].center.values[0][0]+this.scene.models[i].width/2, this.scene.models[i].center.values[1][0]-this.scene.models[i].height/2, this.scene.models[i].center.values[2][0]-this.scene.models[i].depth/2, 1));
                 //front bottom right
                 this.v.push(Vector4(this.scene.models[i].center.values[0][0]+this.scene.models[i].width/2, this.scene.models[i].center.values[1][0]-this.scene.models[i].height/2, this.scene.models[i].center.values[2][0]+this.scene.models[i].depth/2, 1));
-                console.log(this.scene.models[i].center.values[2][0]);
                 edges[0].push([0], [1], [2], [3], [0]);
                 edges[1].push([4], [5], [6], [7], [4]);
                 for(let i = 0; i < 4; i++) {
@@ -324,13 +365,13 @@ class Renderer {
                         }
                     }
                 } 
-                console.log(lines);
+               
 
 
             }
 
         
-            if(this.scene.models[0].type === 'cone') {
+            if(this.scene.models[i].type === 'cone') {
                 //let v = [];
                 let edges = [];
                 //create enough space for each edge
@@ -410,7 +451,7 @@ class Renderer {
             }
         
         
-        if(this.scene.models[0].type === 'cylinder'){
+        if(this.scene.models[i].type === 'cylinder'){
             console.log('cylinder');
             // center (3-component array), radius, height, sides
             //let v = [];
@@ -438,7 +479,6 @@ class Renderer {
                 edges[j+2].push([j])
                 edges[j+2].push([j+this.scene.models[0].sides])
             }
-            console.log(edges);
 
             // bottom vertices
             for(let j = 0; j < this.scene.models[0].sides; j++){
@@ -507,7 +547,7 @@ class Renderer {
 
 
 
-        if(this.scene.models[0].type === 'sphere'){
+        if(this.scene.models[i].type === 'sphere'){
             console.log('sphere');
             // center (3-component array), radius, slices, stacks
             //let v = [];
@@ -600,22 +640,22 @@ class Renderer {
     // z_min:        float (near clipping plane in canonical view volume)
     outcodePerspective(vertex, z_min) {
         let outcode = 0;
-        if (vertex.x < (vertex.z - FLOAT_EPSILON)) {    console.log('left');
+        if (vertex.x < (vertex.z - FLOAT_EPSILON)) {   
             outcode += LEFT;
         }
-        else if (vertex.x > (-vertex.z + FLOAT_EPSILON)) {    console.log('right');
+        else if (vertex.x > (-vertex.z + FLOAT_EPSILON)) {  
             outcode += RIGHT;
         }
-        if (vertex.y < (vertex.z - FLOAT_EPSILON)) {    console.log('bottom');
+        if (vertex.y < (vertex.z - FLOAT_EPSILON)) {    
             outcode += BOTTOM;
         }
-        else if (vertex.y > (-vertex.z + FLOAT_EPSILON))    {console.log('top');
+        else if (vertex.y > (-vertex.z + FLOAT_EPSILON)) {  
             outcode += TOP;
         }
-        if (vertex.z < (-1.0 - FLOAT_EPSILON)) {    console.log('far');
+        if (vertex.z < (-1.0 - FLOAT_EPSILON)) {   
             outcode += FAR;
         }
-        else if (vertex.z > (z_min + FLOAT_EPSILON)) {    console.log('near');
+        else if (vertex.z > (z_min + FLOAT_EPSILON)) {    
             outcode += NEAR;
         }
         return outcode;

@@ -11,11 +11,14 @@
             "center": [ 0.0,  10.0, -30.0],
             "width": 20,
             "height": 20,
-            "depth": 20, 
-            "animation": {
-                "axis": "z",
-                "rps": 3
-            }
+            "depth": 20
+        },
+        {
+            "type": "cylinder",
+            "center": [0.0,  0.0, -30.0],
+            "radius": 8,
+            "height": 20,
+            "sides": 25
         }
     ]
     }

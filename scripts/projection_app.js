@@ -54,14 +54,14 @@ function init() {
 
     let initial_scene = {
         view: { 
-            // prp: [44, 20, -16],
-            // srp: [20, 20, -40],
-            // vup: [0, 1, 0],
-            // clip: [-19, 5, -10, 8, 12, 100]
-            prp: [0, 10, -5],
-            srp: [20, 15, -40],
-            vup: [1, 1, 0],
-            clip: [-12, 6, -12, 6, 10, 100]
+            prp: [44, 20, -16],
+            srp: [20, 20, -40],
+            vup: [0, 1, 0],
+            clip: [-19, 5, -10, 8, 12, 100]
+            // prp: [0, 10, -5],
+            // srp: [20, 15, -40],
+            // vup: [1, 1, 0],
+            // clip: [-12, 6, -12, 6, 10, 100]
         },
         models: [
             {
@@ -87,8 +87,14 @@ function init() {
                     [3, 8],
                     [4, 9]
                 ]
+                // ,
+                // animation: {
+                //     axis: "y",
+                //     rps: 4
+                // }
             }
-        ]
+        ] 
+        
     };
 
     document.addEventListener('keydown', app.onKeyDown, false);
