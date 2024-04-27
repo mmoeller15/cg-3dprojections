@@ -4,6 +4,15 @@ Available here: https://mmoeller15.github.io/cg-3dprojections
 
 Implements 3D line drawing by projecting models onto the view-plane. Uses HTML's Canvas 2D API.
 
+### Download json objects to visualize new scenes
+
+Download and import with the `Choose File` button
+
+[Download a sample cube](https://github.com/mmoeller15/cg-3dprojections/blob/main/cube.json)
+[Download a sample cone](https://github.com/mmoeller15/cg-3dprojections/blob/main/cone.json)
+[Download a sample cylinder](https://github.com/mmoeller15/cg-3dprojections/blob/main/cylinder.json)
+[Download a sample sphere](https://github.com/mmoeller15/cg-3dprojections/blob/main/sphere.json)
+
 
 ---
 
