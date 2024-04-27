@@ -14,7 +14,8 @@ Download and import with the `Choose File` button
 <details>
             <summary>Functions used in project</summary>
             <br>
-            ## Vector Class API
+            
+## Vector Class API
 Code includes file `matrix.js` used to create vectors and matrices
 
 ---
