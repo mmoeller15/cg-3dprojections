@@ -1,4 +1,4 @@
-https://mmoeller15.github.io/cg-3dprojections/
+Available here: https://mmoeller15.github.io/cg-3dprojections/
 
 
 # 3D Projections & Clipping for Wireframe Rendering
