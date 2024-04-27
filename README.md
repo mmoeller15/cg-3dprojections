@@ -312,7 +312,8 @@ let t_inv = t.inverse()
 **Result:**
 
 $$t\\_inv = \begin{bmatrix}0.5 & 0 & 2.5\\\0 & 0.25 & -2.5\\\0 & 0 & 1\end{bmatrix}$$
+---
 
 </details>
----
+
 
