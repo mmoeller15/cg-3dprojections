@@ -1,11 +1,9 @@
 # 3D Projections & Clipping for Wireframe Rendering
 
-Available here: https://mmoeller15.github.io/cg-3dprojections/
+Available here: https://mmoeller15.github.io/cg-3dprojections
 
+Implements 3D line drawing by projecting models onto the view-plane. Uses HTML's Canvas 2D API.
 
-
-
-3D Projections & Clipping starter code using the HTML5 Canvas 2D API
 
 ---
 
